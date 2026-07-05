@@ -152,22 +152,15 @@ Recommended repo structure:
 Recommended design-system location:
 
 ```txt
-/apps/web/design-system
+/frontend/design-system
   DESIGN.md
   theme.css
   variables.css
   tokens.json
 ```
 
-or:
-
-```txt
-/packages/design-system
-  DESIGN.md
-  theme.css
-  variables.css
-  tokens.json
-```
+The current repository keeps canonical design tokens in `docs/design/`. A shared package
+can be introduced later only if multiple standalone projects need to consume the tokens.
 
 ---
 

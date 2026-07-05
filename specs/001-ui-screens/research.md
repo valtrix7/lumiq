@@ -1,8 +1,8 @@
 # Research: Lumiq Complete UI Screen System
 
-## Decision: Build UI-only screens in `apps/web` with Next.js App Router
+## Decision: Build UI-only screens in `frontend` with Next.js App Router
 
-**Rationale**: The repository already contains a Next.js 16.2.9 app at `apps/web` using
+**Rationale**: The repository already contains a Next.js 16.2.9 app at `frontend` using
 React 19, TypeScript, and Tailwind v4. Context7 confirms App Router pages and layouts are
 Server Components by default, while interactive components require `"use client"` at the
 top of their file. A UI-only build can therefore keep route pages mostly server-rendered
@@ -18,7 +18,7 @@ and local mock interactions.
 
 ## Decision: Initialize shadcn/ui before implementation
 
-**Rationale**: shadcn CLI inspection reports that `apps/web` is a Next.js project with
+**Rationale**: shadcn CLI inspection reports that `frontend` is a Next.js project with
 Tailwind v4, RSC, TypeScript, import alias `@`, and no current shadcn config/components.
 The shadcn skill requires composing standard UI controls from existing primitives rather
 than inventing custom controls. This is appropriate for product UI screens: Tabs, Table,
@@ -50,9 +50,9 @@ where they conflict.
 - Generate a new palette from design tooling: rejected because committed tokens exist.
 - Use light/dark theming: rejected because Lumiq core app is dark-only.
 
-## Decision: Create `apps/web/PRODUCT.md` before UI implementation
+## Decision: Create `frontend/PRODUCT.md` before UI implementation
 
-**Rationale**: The `impeccable` skill reports `NO_PRODUCT_MD` for `apps/web` and requires
+**Rationale**: The `impeccable` skill reports `NO_PRODUCT_MD` for `frontend` and requires
 PRODUCT.md as a strategic context file before design work. Since the repo already contains
 product docs, the implementation should synthesize PRODUCT.md from PRD, UX spec, and
 design docs rather than asking fresh questions.
@@ -61,7 +61,7 @@ design docs rather than asking fresh questions.
 
 - Skip PRODUCT.md: rejected because the required UI design skill treats it as a blocker.
 - Put PRODUCT.md only at repo root: acceptable in some projects, but `impeccable` target
-  resolution identified `apps/web` as the project root for frontend work.
+  resolution identified `frontend` as the project root for frontend work.
 
 ## Decision: Model screens with seeded/mock frontend data
 

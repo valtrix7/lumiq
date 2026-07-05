@@ -231,20 +231,33 @@ flowchart TB
 
 Current layout on disk:
 
+Lumiq is split into two **independent** projects — `frontend/` and `backend/` —
+each with its own dependencies and install. There is no shared workspace or
+build orchestrator; you run each side on its own.
+
 ```txt
 lumiq/
   README.md
   AGENTS.md               # canonical coding-agent instructions
   CLAUDE.md               # pointer to AGENTS.md for Claude Code
+  package.json            # root convenience scripts only (NOT a workspace)
   .env.example
-  package.json
-  pnpm-workspace.yaml
-  turbo.json
   docker-compose.yml
   skills-lock.json        # manifest for shared AI-agent skills
   skills/                 # 46 shared AI-agent skills (tool-agnostic)
   .claude/                # Claude Code local settings
   .specify/               # Spec Kit config
+
+  frontend/               # Next.js app — the built UI (standalone project)
+    src/app/              # routes: landing, demo, share, and (workspace)/*
+    src/components/       # studio, review, vault, provenance, commerce, ...
+    src/lib/              # navigation, screen-types, mock-data
+    PRODUCT.md            # design entry point for the web app
+
+  backend/                # server side (standalone projects)
+    api/                  # Core API (stub)
+    mastra/               # Mastra agent service (stub)
+    packages/             # shared server libs: api-client, test-fixtures (stubs)
 
   docs/
     00-spec-index.md
@@ -262,29 +275,14 @@ lumiq/
 
   specs/
     001-ui-screens/       # Spec Kit feature spec (plan, tasks, contracts)
-
-  apps/
-    web/                  # Next.js app — primary build target
-    api/                  # Core API (stub)
-    mastra/               # Mastra agent service (stub)
-
-  packages/
-    api-client/           # generated API client (stub)
-    test-fixtures/        # shared test fixtures (stub)
 ```
 
 ### Planned, not yet scaffolded
 
-The full target topology below is the destination, not the current state. These
-directories are referenced by the specs but do not exist on disk yet:
-
 ```txt
-apps/workers/            # signal, capture, genblaze, qa, publish, recovery
-packages/                # db, contracts, schemas, domain, auth, events,
-                         #   storage, media, ui, design-system, observability
+backend/workers/         # signal, capture, genblaze, qa, publish, recovery (Python)
 infra/                   # docker, nats, neon, b2, clerk, scripts, ci
 tests/                   # e2e, contract, integration, fixtures
-scripts/
 ```
 
 ---
@@ -314,10 +312,16 @@ The repository should be built in this order:
 > Commands below are the intended developer workflow. Exact scripts may be adjusted as implementation lands.
 
 ```bash
-pnpm install
-cp .env.example .env.local
-pnpm dev
+# frontend (Next.js)
+cd frontend
+npm install
+cp ../.env.example .env.local
+npm run dev            # http://localhost:3000
 ```
+
+From the repo root, `npm run dev` / `npm run build` are convenience shortcuts
+that proxy into `frontend/`. Use `npm run install:frontend` to install only the
+frontend dependencies for UI/UX work.
 
 Run the local stack:
 
@@ -328,18 +332,16 @@ docker compose up --build
 Run validation gates:
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm contracts:validate
-pnpm schemas:validate
+npm run lint
+npm run typecheck
+npm run build
 ```
 
-Run the seeded golden path smoke test:
+Planned seeded golden path smoke tests:
 
 ```bash
-pnpm seed:demo
-pnpm test:e2e:golden
+npm run seed:demo
+npm run test:e2e:golden
 ```
 
 ---
@@ -569,10 +571,11 @@ Design tokens currently live in:
 
 ```txt
 docs/design/          # tokens.json, theme.css, variables.css
-apps/web/src/app/globals.css   # applied tokens for the web app
+frontend/src/app/globals.css   # applied tokens for the web app
 ```
 
-A dedicated `packages/design-system/` is planned once tokens are shared across apps.
+A dedicated shared design-system package can be added later if tokens need to be consumed
+outside the standalone frontend app.
 
 ---
 

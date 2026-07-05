@@ -397,7 +397,7 @@ phase_0:
 | TASK-SPEC-001 | Place docs `00`–`27` in canonical repo structure | Product/Architecture | none | RULE-SOT-001 | Files present under `/docs`; links in index work |
 | TASK-SPEC-002 | Add `README.md` with project overview and reading order | Product/Engineering | TASK-SPEC-001 | RULE-SOT-001 | README references spec index and golden path |
 | TASK-SPEC-003 | Add `AGENTS.md` for coding-agent rules | Architecture | TASK-SPEC-001 | RULE-SOT-001, RULE-AGENT-001 | File lists do/don't rules and required reading order |
-| TASK-SPEC-004 | Add repo folder skeleton | Engineering | TASK-SPEC-001 | N/A | `/apps/web`, `/apps/api`, `/apps/mastra`, `/workers`, `/packages`, `/docs` exist |
+| TASK-SPEC-004 | Add repo folder skeleton | Engineering | TASK-SPEC-001 | N/A | `/frontend`, `/backend/api`, `/backend/mastra`, `/backend/workers`, `/backend/packages`, `/docs` exist |
 | TASK-SPEC-005 | Add requirement-to-test traceability convention | QA | TASK-SPEC-001 | RULE-TEST-001 | Test naming or metadata convention documented |
 
 ---
@@ -519,7 +519,7 @@ phase_3:
 
 | Task ID | Task | Owner | Depends on | Requirement refs | DoD / Test gate |
 |---|---|---|---|---|---|
-| TASK-FOUND-001 | Initialize monorepo package manager and lint/typecheck | Engineering | TASK-SPEC-004 | RULE-ENV-004 | `pnpm lint`, `pnpm typecheck` or equivalents pass |
+| TASK-FOUND-001 | Initialize standalone frontend/backend package scripts and lint/build checks | Engineering | TASK-SPEC-004 | RULE-ENV-004 | `npm run lint`, `npm run build`, or equivalents pass |
 | TASK-FOUND-002 | Create Docker Compose local stack | Infra | TASK-FOUND-001 | RULE-ENV-002 | Starts API, workers, NATS, local DB or Neon branch config |
 | TASK-FOUND-003 | Add frontend fixture/API boundary and environment switch | Frontend | TASK-FE-FIRST-015, TASK-FOUND-001 | REQ-UI-001 | UI can run on fixtures and later switch to API data |
 | TASK-FOUND-004 | Create Core API skeleton | Backend | TASK-FOUND-001 | RULE-ARCH-002 | `/healthz` works; structured logging enabled |

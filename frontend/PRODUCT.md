@@ -1,8 +1,8 @@
-# PRODUCT.md — Lumiq Web (apps/web)
+# PRODUCT.md — Lumiq Web (frontend)
 
 Strategic context for UI/design work in the Lumiq frontend. Synthesized from
 `docs/product/PRD.md`, `docs/product/05-user-flows-ux-spec.md`, `docs/design/*`,
-and `apps/web/CLAUDE.md`. This file is the design entry point for `apps/web` and must
+and the root `AGENTS.md`. This file is the design entry point for `frontend/` and must
 be read before building or restyling screens.
 
 ## What Lumiq is
@@ -99,5 +99,5 @@ review-required · success · disabled-with-reason · reduced-motion. Provenance
   by screen in `src/components/*`. Mock data and types live in `src/lib`.
 - Keep route pages server-rendered where possible; scope `"use client"` to navigation, tabs,
   filters, drawers, dialogs, segmented controls, and local toggles.
-- Validate with `pnpm --filter web lint` and `pnpm --filter web build`, plus responsive QA at
+- Validate with `npm --prefix frontend run lint`, `npm --prefix frontend run typecheck`, and `npm --prefix frontend run build`, plus responsive QA at
   375/768/1024/1440, keyboard/focus, and reduced-motion checks (`specs/001-ui-screens/quickstart.md`).

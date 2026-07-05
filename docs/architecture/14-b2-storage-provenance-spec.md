@@ -1940,7 +1940,7 @@ Signed URL leaks into log test should fail lint/security check.
 Recommended code layout:
 
 ```txt
-/packages/storage
+/backend/packages/storage
   src/b2/client.ts or py
   src/b2/key-generator.ts
   src/b2/signed-url.ts
@@ -1951,13 +1951,13 @@ Recommended code layout:
   src/b2/bucket-registry.ts
   tests/
 
-/apps/api/src/modules/assets
-/apps/api/src/modules/provenance
-/apps/api/src/modules/retention
-/apps/workers/capture-worker
-/apps/workers/genblaze-worker
-/apps/workers/publish-worker
-/apps/workers/audit-reconciliation-worker
+/backend/api/src/modules/assets
+/backend/api/src/modules/provenance
+/backend/api/src/modules/retention
+/backend/workers/capture-worker
+/backend/workers/genblaze-worker
+/backend/workers/publish-worker
+/backend/workers/audit-reconciliation-worker
 ```
 
 ---

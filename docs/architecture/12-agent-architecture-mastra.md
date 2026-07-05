@@ -689,7 +689,7 @@ No major restyle should auto-publish without review.
 ## 15. Implementation Layout
 
 ```txt
-/apps/mastra
+/backend/mastra
   src/mastra/index.ts
   src/mastra/agents/
   src/mastra/tools/

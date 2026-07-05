@@ -5,22 +5,22 @@ It intentionally does not validate backend behavior.
 
 ## Prerequisites
 
-- Node/pnpm workspace dependencies installed.
-- `apps/web` has shadcn/ui initialized.
-- `apps/web/PRODUCT.md` exists.
+- Node/npm dependencies installed for the standalone frontend app.
+- `frontend` has shadcn/ui initialized.
+- `frontend/PRODUCT.md` exists.
 - UI mock data exists under the implementation path chosen by tasks.
 - No real service credentials are required.
 
 ## Setup
 
 ```bash
-pnpm install
+npm --prefix frontend install
 ```
 
 Run the web app:
 
 ```bash
-pnpm --filter web dev
+npm --prefix frontend run dev
 ```
 
 Open the local Next.js URL shown by the command, typically:
@@ -222,13 +222,19 @@ Expected:
 Run lint:
 
 ```bash
-pnpm --filter web lint
+npm --prefix frontend run lint
+```
+
+Run typecheck:
+
+```bash
+npm --prefix frontend run typecheck
 ```
 
 Run build:
 
 ```bash
-pnpm --filter web build
+npm --prefix frontend run build
 ```
 
 ## Responsive QA Checklist

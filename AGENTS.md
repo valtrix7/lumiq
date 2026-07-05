@@ -40,7 +40,7 @@ Start with these files when present:
 5. `docs/product/03-glossary-domain-language.md`
 6. `docs/product/05-user-flows-ux-spec.md`
 7. `docs/engineering/27-implementation-plan-tasks.md`
-8. Lumiq design-system files under `packages/design-system` or `apps/web/design-system`
+8. Lumiq design-system files under `docs/design` or `frontend/design-system`
 9. API/event/schema contracts under `docs/contracts`
 
 If a referenced spec file is missing from the repo, do not invent broad behavior. Use the README and this file, make the smallest safe assumption, and leave a clear TODO or note in the final response.
@@ -75,25 +75,18 @@ Examples:
 
 ## 4. Development environment expectations
 
-Use this repo shape:
+Use this repo shape. Lumiq is no longer a pnpm/Turbo monorepo; `frontend/` and `backend/`
+are independent projects, with root scripts used only as convenience proxies.
 
 ```txt
-apps/web
-apps/api
-apps/mastra
-apps/workers
-packages/ui
-packages/design-system
-packages/api-client
-packages/test-fixtures
-packages/schemas
-packages/contracts
-packages/db
-packages/domain
-packages/events
-packages/storage
-packages/media
-packages/observability
+frontend
+backend/api
+backend/mastra
+backend/workers
+backend/packages/api-client
+backend/packages/test-fixtures
+docs/design
+docs/contracts
 infra/*
 tests/*
 scripts/*
@@ -102,20 +95,19 @@ scripts/*
 Default local commands:
 
 ```bash
-pnpm install
-cp .env.example .env.local
-pnpm dev
+cd frontend
+npm install
+cp ../.env.example .env.local
+npm run dev
 docker compose up --build
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm contracts:validate
-pnpm schemas:validate
-pnpm seed:demo
-pnpm test:e2e:golden
+npm run lint
+npm run build
 ```
 
-If scripts are not implemented yet, add safe placeholder scripts rather than deleting the expected command names.
+From the repository root, `npm run dev`, `npm run build`, and `npm run lint` proxy into
+`frontend/`. Backend services install and run independently under `backend/*`.
+If future validation scripts are not implemented yet, add safe placeholder scripts rather
+than deleting expected command names.
 
 Local development must use mock providers by default. Real provider calls require explicit opt-in through environment variables such as:
 
@@ -351,12 +343,12 @@ Create the repo/dev scaffold and UI-first foundation without real provider calls
 
 Deliver:
 
-- Root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `.gitignore`, `.env.example`, and `docker-compose.yml` if missing.
-- `apps/web` Next.js app shell.
-- `packages/design-system` and/or copied Lumiq token files if available.
-- `packages/test-fixtures` with contract-shaped demo data.
-- Placeholder `apps/api` and `apps/mastra` services if missing.
+- Root `package.json`, `.gitignore`, `.env.example`, and `docker-compose.yml` if missing.
+- `frontend` Next.js app shell.
+- `docs/design` and/or `frontend/design-system` Lumiq token files if available.
+- `backend/packages/test-fixtures` with contract-shaped demo data.
+- Placeholder `backend/api` and `backend/mastra` services if missing.
 - Local Postgres, NATS, and B2-compatible mock service configuration.
-- Passing `pnpm install`, `pnpm typecheck`, and `pnpm lint` or a clear report explaining what still needs implementation.
+- Passing `npm --prefix frontend install`, `npm --prefix frontend run build`, and `npm --prefix frontend run lint` or a clear report explaining what still needs implementation.
 
 Keep real AI/media/B2 provider calls disabled by default.

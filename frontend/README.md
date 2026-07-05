@@ -1,25 +1,26 @@
-# @lumiq/web
+# Lumiq Frontend
 
 The Lumiq web app — the **primary build target** and UI spine of the repository.
 Built with Next.js (App Router) + TypeScript + Tailwind, using the dark cinematic
 Lumiq design language and contract-shaped fixtures.
 
-For repository-wide context, read the root [`README.md`](../../README.md) and the
-coding-agent instructions in [`AGENTS.md`](../../AGENTS.md) first.
+For repository-wide context, read the root [`README.md`](../README.md) and the
+coding-agent instructions in [`AGENTS.md`](../AGENTS.md) first.
 
 ## Develop
 
-From the repo root (preferred, so workspace deps resolve):
+From this directory:
 
 ```bash
-pnpm install
-pnpm dev            # runs turbo dev across the workspace
+npm install
+npm run dev
 ```
 
-Or scope to this app only:
+Or from the repo root:
 
 ```bash
-pnpm --filter @lumiq/web dev
+npm run install:frontend
+npm run dev
 ```
 
 Then open http://localhost:3000.
@@ -37,8 +38,8 @@ src/
 ## Product & design references
 
 - Product overview: [`PRODUCT.md`](./PRODUCT.md)
-- Design language & tokens: [`docs/design/`](../../docs/design)
-- UX flows: [`docs/product/05-user-flows-ux-spec.md`](../../docs/product/05-user-flows-ux-spec.md)
+- Design language & tokens: [`docs/design/`](../docs/design)
+- UX flows: [`docs/product/05-user-flows-ux-spec.md`](../docs/product/05-user-flows-ux-spec.md)
 
 ## Conventions
 

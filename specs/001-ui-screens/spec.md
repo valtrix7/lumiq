@@ -309,7 +309,7 @@ presets and verify capability-sensitive controls render correctly.
 - **FR-029**: The UI MUST use shadcn/ui composition for standard controls where
   components are available instead of ad hoc custom controls.
 - **FR-030**: The UI MUST include a root product context document for design tooling
-  (`apps/web/PRODUCT.md`) before implementation begins.
+  (`frontend/PRODUCT.md`) before implementation begins.
 
 ### Constitutional Requirements
 
@@ -400,7 +400,7 @@ presets and verify capability-sensitive controls render correctly.
 - **SC-009**: Accessibility QA confirms all icon-only controls have labels, status colors
   are paired with text/icons, keyboard focus is visible, dialogs/sheets have titles, and
   reduced-motion mode disables pulses/loops.
-- **SC-010**: `pnpm --filter web lint` and `pnpm --filter web build` complete after the
+- **SC-010**: `npm --prefix frontend run lint` and `npm --prefix frontend run build` complete after the
   implementation phase.
 
 ## Assumptions
@@ -409,13 +409,13 @@ presets and verify capability-sensitive controls render correctly.
   explicitly out of scope.
 - The first implementation may use static mock data, route-level mock state, or component
   local state. It must not introduce real service clients.
-- The app target is `apps/web`, which currently uses Next.js 16.2.9, React 19.2.4,
+- The app target is `frontend`, which currently uses Next.js 16.2.9, React 19.2.4,
   Tailwind CSS v4, and TypeScript.
 - shadcn/ui is not initialized yet; implementation should initialize it before composing
   standard UI controls.
 - `docs/design/*` is authoritative for Lumiq visual direction even when generic design
   skills recommend conflicting choices.
-- `apps/web/PRODUCT.md` should be created as a design-context prerequisite before
+- `frontend/PRODUCT.md` should be created as a design-context prerequisite before
   implementation because `impeccable` requires it.
 - Existing default Next starter UI should be replaced by Lumiq routes and screen system.
 - UI copy can use seeded demo scenario content from `docs/demo/26-hackathon-demo-submission-spec.md`.

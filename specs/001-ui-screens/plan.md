@@ -6,7 +6,7 @@
 
 ## Summary
 
-Build the complete Lumiq frontend screen system in `apps/web` as a UI-only feature.
+Build the complete Lumiq frontend screen system in `frontend` as a UI-only feature.
 The implementation will replace the default Next starter page with a dark-only,
 token-driven, shadcn-composed interface covering public marketing, onboarding/setup,
 workspace shell, Live Studio, Review, Vault, Catalog, Campaigns, Templates, Analytics,
@@ -29,13 +29,13 @@ must follow the shadcn project config after initialization.
 **Storage**: No real storage. UI-only mock data modules for seeded organizations, sessions,
 moments, assets, B2 keys, manifests, QA, publish packages, analytics, and admin recovery.
 
-**Testing**: `pnpm --filter web lint`, `pnpm --filter web build`, responsive visual QA at
+**Testing**: `npm --prefix frontend run lint`, `npm --prefix frontend run typecheck`, `npm --prefix frontend run build`, responsive visual QA at
 375/768/1024/1440, keyboard/focus QA, reduced-motion QA, and route/state walkthroughs
 defined in `quickstart.md`.
 
-**Target Platform**: Web desktop and mobile browsers through the Next.js app in `apps/web`.
+**Target Platform**: Web desktop and mobile browsers through the Next.js app in `frontend`.
 
-**Project Type**: Frontend web application, UI-only implementation, monorepo app package.
+**Project Type**: Frontend web application, UI-only implementation, standalone frontend app.
 
 **Performance Goals**: Initial UI routes should render from static/server components where
 possible; interactive client components should be scoped to navigation, toggles, filters,
@@ -100,7 +100,7 @@ specs/001-ui-screens/
 ### Source Code (repository root)
 
 ```text
-apps/web/
+frontend/
 ├── PRODUCT.md                  # design tooling context required before UI work
 ├── src/app/
 │   ├── globals.css             # Tailwind v4 + Lumiq token mapping

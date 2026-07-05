@@ -1685,7 +1685,7 @@ Additional output-specific keys:
 Recommended repository layout:
 
 ```txt
-/apps/workers/genblaze-worker
+/backend/workers/genblaze-worker
   pyproject.toml
   README.md
   src/lumiq_genblaze_worker/
