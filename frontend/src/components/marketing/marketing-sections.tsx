@@ -15,12 +15,17 @@ import {
   ArrowRight,
   ArrowUpRight,
   Boxes,
+  CheckCircle2,
   Database,
   FileCheck2,
+  GitBranch,
+  Layers3,
   Radio,
   ScanSearch,
   ShieldCheck,
   Sparkles,
+  Timer,
+  Video,
   Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -116,6 +121,179 @@ const HERO_PROOFS: { value: string; mono?: boolean; detail: string }[] = [
   { value: "Role-aware", detail: "from owner down to viewer" },
 ];
 
+const HERO_MODES = [
+  { icon: ScanSearch, label: "Detect", detail: "Find product reveal" },
+  { icon: ShieldCheck, label: "Authorize", detail: "Policy allows capture" },
+  { icon: Wand2, label: "Generate", detail: "Genblaze master" },
+  { icon: GitBranch, label: "Prove", detail: "Lineage manifest" },
+];
+
+function StudioModePills() {
+  return (
+    <div className="mx-auto mt-9 grid max-w-4xl gap-2 sm:grid-cols-4">
+      {HERO_MODES.map((mode, index) => {
+        const Icon = mode.icon;
+        return (
+          <Reveal key={mode.label} delay={index * 0.04} y={10}>
+            <div className="group/mode flex h-full items-start gap-3 rounded-full border border-[color:var(--border-subtle)] bg-[color:var(--color-surface-one)]/45 px-4 py-3 text-left transition-colors duration-200 hover:border-[color:var(--border-medium)] hover:bg-[color:var(--color-surface-two)]/55 sm:rounded-xl">
+              <span className="bg-[color:var(--royal-blue-soft)] text-royal-blue flex size-8 shrink-0 items-center justify-center rounded-full">
+                <Icon aria-hidden className="size-4" />
+              </span>
+              <span className="min-w-0">
+                <span className="text-text-primary block text-sm font-medium">{mode.label}</span>
+                <span className="text-text-muted mt-0.5 block truncate text-xs">{mode.detail}</span>
+              </span>
+            </div>
+          </Reveal>
+        );
+      })}
+    </div>
+  );
+}
+
+function StudioCanvasPreview() {
+  const bundle = getMomentBundle(DEMO_MOMENT_ID);
+  const pkg = bundle?.publishPackage;
+  const signals = [
+    { label: "product visible", value: "0.91", status: "success" as const },
+    { label: "offer grounded", value: "0.88", status: "success" as const },
+    { label: "QA passed", value: "6/6", status: "success" as const },
+  ];
+
+  return (
+    <Reveal y={28} className="mt-12">
+      <div className="mx-auto max-w-6xl rounded-2xl border border-[color:var(--border-subtle)] bg-[color:var(--color-panel-black)] p-2 sm:p-3">
+        <div className="overflow-hidden rounded-xl border border-[color:var(--border-subtle)] bg-[color:var(--color-canvas-black)]">
+          <div className="flex items-center justify-between border-b border-[color:var(--border-subtle)] px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="flex size-7 items-center justify-center rounded-md bg-[color:var(--color-surface-two)]">
+                <Layers3 aria-hidden className="text-text-secondary size-4" />
+              </span>
+              <div>
+                <p className="text-text-primary text-sm font-medium">Aster Spring Drop</p>
+                <p className="text-text-muted text-xs">Live Studio / provenance canvas</p>
+              </div>
+            </div>
+            <div className="hidden items-center gap-2 sm:flex">
+              <StatusBadge label="seeded demo" severity="neutral" />
+              <StatusBadge label="live" severity="processing" />
+            </div>
+          </div>
+
+          <div className="grid gap-px bg-[color:var(--border-subtle)] lg:grid-cols-[1fr_320px]">
+            <div className="bg-[color:var(--color-panel-black)] p-3 sm:p-4">
+              <div className="grid gap-3 md:grid-cols-[0.72fr_0.28fr]">
+                <div className="relative overflow-hidden rounded-xl border border-[color:var(--border-subtle)] bg-[color:var(--color-canvas-black)]">
+                  <MediaPlaceholder
+                    kind="video"
+                    aspect="16:9"
+                    label="Prerecorded-live source preview"
+                    caption="Aster Crossbody source preview"
+                    className="rounded-none border-0"
+                  />
+                  <div className="absolute left-3 top-3 flex items-center gap-2">
+                    <span className="bg-[color:var(--color-canvas-black)]/80 text-text-secondary inline-flex items-center gap-1.5 rounded-full border border-[color:var(--border-subtle)] px-2.5 py-1 text-xs">
+                      <Video aria-hidden className="size-3.5" />
+                      source ready
+                    </span>
+                  </div>
+                  <div className="absolute bottom-3 left-3 right-3 rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--color-canvas-black)]/85 p-3">
+                    <div className="mb-2 flex items-center justify-between gap-3">
+                      <span className="text-text-primary text-sm font-medium">
+                        Detected moment: product_reveal
+                      </span>
+                      <MonoMetadata value="0.89" muted />
+                    </div>
+                    <LineageChain nodes={bundle?.lineage ?? []} />
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-3">
+                  <div className="rounded-xl border border-[color:var(--border-subtle)] bg-[color:var(--color-surface-one)]/70 p-3">
+                    <div className="mb-3 flex items-center justify-between">
+                      <span className="text-text-primary text-sm font-medium">Signal stack</span>
+                      <Timer aria-hidden className="text-text-muted size-4" />
+                    </div>
+                    <ul className="space-y-2">
+                      {signals.map((signal) => (
+                        <li key={signal.label} className="flex items-center justify-between gap-3">
+                          <span className="text-text-muted text-xs">{signal.label}</span>
+                          <StatusBadge label={signal.value} severity={signal.status} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div
+                    className="rounded-xl p-px"
+                    style={{ background: "var(--gradient-spectral-pastel)" }}
+                  >
+                    <div className="rounded-[11px] bg-[color:var(--color-surface-one)] p-3">
+                      <div className="mb-3 flex items-center gap-2">
+                        <Sparkles aria-hidden className="text-text-secondary size-4" />
+                        <span className="text-text-primary text-sm font-medium">
+                          Mastra recommendation
+                        </span>
+                      </div>
+                      <p className="text-text-muted text-xs leading-relaxed">
+                        Product, offer keyword, and audio peak co-occur. Recommend capture and
+                        clean_product_reveal_v1.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-3 grid gap-2 sm:grid-cols-4">
+                {["Raw", "Mezzanine", "Genblaze", "Publish"].map((step, index) => (
+                  <div
+                    key={step}
+                    className="rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--color-surface-one)]/55 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-text-primary text-xs font-medium">{step}</span>
+                      <CheckCircle2 aria-hidden className="text-[color:var(--success)] size-4" />
+                    </div>
+                    <div className="mt-3 h-1 rounded-full bg-[color:var(--neutral-bg)]">
+                      <span
+                        className="block h-full rounded-full bg-[color:var(--royal-blue)]"
+                        style={{ width: `${70 + index * 8}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <aside className="bg-[color:var(--color-surface-one)]/60 p-3 sm:p-4">
+              <div className="relative">
+                <MediaPlaceholder
+                  kind="video"
+                  aspect="9:16"
+                  label="Published vertical variant - Aster Crossbody"
+                  caption="Published vertical"
+                  className="rounded-xl"
+                />
+                <span className="absolute left-3 top-3">
+                  <StatusBadge label="published" severity="info" />
+                </span>
+                <span className="absolute bottom-3 left-3 right-3 rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--color-canvas-black)]/85 p-3">
+                  <span className="text-text-primary block text-sm font-medium">
+                    {pkg?.title ?? "Aster Crossbody - Spring Drop reveal"}
+                  </span>
+                  <span className="text-text-muted mt-1 block text-xs">
+                    QA passed / provenance verified
+                  </span>
+                </span>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 export function MarketingHero() {
   const bundle = getMomentBundle(DEMO_MOMENT_ID);
   const pkg = bundle?.publishPackage;
@@ -130,8 +308,8 @@ export function MarketingHero() {
       />
       <HeroBackdrop />
 
-      <PageContainer className="relative grid items-center gap-12 py-20 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-28">
-        <div className="flex flex-col items-start">
+      <PageContainer className="relative py-16 sm:py-20 lg:py-24">
+        <div className="mx-auto flex max-w-5xl flex-col items-center text-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-[color:var(--border-subtle)] bg-[color:var(--color-shell-black)]/60 px-3 py-1">
             <span
               aria-hidden
@@ -143,19 +321,19 @@ export function MarketingHero() {
             </span>
           </span>
 
-          <h1 className="text-text-primary mt-6 text-4xl font-semibold tracking-tight text-balance sm:text-5xl lg:text-6xl">
-            Every published moment,{" "}
+          <h1 className="text-text-primary mt-6 text-5xl font-semibold tracking-tight text-balance sm:text-6xl lg:text-7xl">
+            Live commerce moments.
+            <br />
             {/* Sole gradient word — sanctioned rare marketing accent (DESIGN §4.2). */}
             <span
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: "var(--gradient-spectral-pastel)" }}
             >
-              traceable
-            </span>{" "}
-            to its exact source.
+              Provenance intact.
+            </span>
           </h1>
 
-          <p className="text-text-secondary mt-5 max-w-xl text-base leading-relaxed text-pretty">
+          <p className="text-text-secondary mt-5 max-w-2xl text-base leading-relaxed text-pretty sm:text-lg">
             Lumiq detects the moments that matter in a live commerce session, captures the raw
             source, generates polished media, runs QA, and publishes — with provenance intact.
           </p>
@@ -173,9 +351,11 @@ export function MarketingHero() {
           </div>
 
           {/* Proof strip — three differentiators, hairline-divided, operational not braggy. */}
-          <dl className="mt-10 grid w-full max-w-xl grid-cols-3 gap-px overflow-hidden rounded-lg border border-[color:var(--border-subtle)] bg-[color:var(--border-subtle)]">
+          <StudioModePills />
+
+          <dl className="mt-10 grid w-full max-w-2xl grid-cols-3 gap-px overflow-hidden rounded-full border border-[color:var(--border-subtle)] bg-[color:var(--border-subtle)] max-sm:rounded-lg">
             {HERO_PROOFS.map((proof) => (
-              <div key={proof.value} className="bg-[color:var(--color-shell-black)] p-4">
+              <div key={proof.value} className="bg-[color:var(--color-shell-black)] px-4 py-3">
                 <dt
                   data-mono={proof.mono ? "" : undefined}
                   className={
@@ -194,7 +374,9 @@ export function MarketingHero() {
 
         {/* Live proof artifact — a real published moment with its provenance, not a mockup.
             AI-active gradient hairline (DESIGN §7.2) marks it as a generated/published asset. */}
-        <Reveal y={28} className="lg:justify-self-end">
+        <StudioCanvasPreview />
+
+        <Reveal y={28} className="hidden">
           <figure
             className="w-full max-w-sm rounded-2xl p-3"
             style={{

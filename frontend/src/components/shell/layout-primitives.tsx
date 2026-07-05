@@ -21,7 +21,7 @@ export function LumiqWordmark({ className }: { className?: string }) {
     <span className={cn("inline-flex items-center gap-2", className)}>
       <span
         aria-hidden
-        className="size-2.5 rounded-full"
+        className="size-2.5 rounded-sm"
         style={{ background: "var(--gradient-spectral-pastel)" }}
       />
       <span className="text-text-primary text-base font-semibold tracking-tight">Lumiq</span>
@@ -116,21 +116,30 @@ export function PublicShell({
 }) {
   return (
     <div className={cn("bg-background flex min-h-full flex-col", className)}>
-      <header className="border-b border-[color:var(--border-subtle)]">
+      <header className="sticky top-0 z-40 border-b border-[color:var(--border-subtle)] bg-[color:var(--color-canvas-black)]/85">
         <PageContainer className="flex h-16 items-center justify-between">
           <Link href="/" aria-label="Lumiq home">
             <LumiqWordmark />
           </Link>
-          <nav className="flex items-center gap-1" aria-label="Public">
+          <nav
+            className="hidden items-center gap-1 rounded-full border border-[color:var(--border-subtle)] bg-[color:var(--color-surface-one)]/55 p-1 sm:flex"
+            aria-label="Public"
+          >
             {publicNav.map((item) => (
-              <Button key={item.id} asChild variant="ghost" size="sm">
+              <Button
+                key={item.id}
+                asChild
+                variant="ghost"
+                size="sm"
+                className="rounded-full px-3 text-xs"
+              >
                 <Link href={item.href}>{item.label}</Link>
               </Button>
             ))}
-            <Button asChild size="sm" className="ml-1">
-              <Link href={cta.href}>{cta.label}</Link>
-            </Button>
           </nav>
+          <Button asChild size="sm" className="rounded-full px-4">
+            <Link href={cta.href}>{cta.label}</Link>
+          </Button>
         </PageContainer>
       </header>
       <main className="flex-1">{children}</main>

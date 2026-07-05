@@ -20,15 +20,19 @@ export interface RevealProps extends Omit<HTMLMotionProps<"div">, "initial" | "w
   children: React.ReactNode;
 }
 
-export function Reveal({ delay = 0, y = 20, children, ...props }: RevealProps) {
+export function Reveal({ delay = 0, y: _entryOffset = 20, children, ...props }: RevealProps) {
   const reduce = useReducedMotion();
 
   return (
     <motion.div
-      initial={reduce ? false : { opacity: 0, y }}
+      initial={false}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{
+        duration: reduce ? 0 : 0.6,
+        delay: reduce ? 0 : delay,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       {...props}
     >
       {children}
