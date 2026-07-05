@@ -1,0 +1,394 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_id",
+    "manifest_type",
+    "organization_id",
+    "created_at",
+    "nodes",
+    "edges",
+    "checksums"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SchemaVersion"
+    },
+    "manifest_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "manifest_type": {
+      "type": "string",
+      "enum": [
+        "capture_manifest",
+        "catalog_snapshot_manifest",
+        "genblaze_manifest",
+        "generation_provenance",
+        "publish_manifest",
+        "publish_provenance",
+        "export_manifest",
+        "deletion_manifest"
+      ]
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "generation_run_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "publish_package_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "catalog_snapshot_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "created_by": {
+      "type": "string",
+      "enum": [
+        "core-api",
+        "capture-worker",
+        "genblaze-worker",
+        "publish-worker",
+        "audit-reconciliation-worker"
+      ]
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "node_id",
+          "node_type",
+          "ref_id",
+          "label"
+        ],
+        "properties": {
+          "node_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "node_type": {
+            "type": "string",
+            "enum": [
+              "asset",
+              "generation_run",
+              "publish_package",
+              "catalog_snapshot",
+              "qa_result",
+              "manifest",
+              "policy_decision",
+              "agent_tool_call",
+              "llm_run"
+            ]
+          },
+          "ref_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "asset_role": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AssetRole"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sha256": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "b2_object": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/B2ObjectRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from_node_id",
+          "to_node_id",
+          "relationship"
+        ],
+        "properties": {
+          "from_node_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "to_node_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+          },
+          "relationship": {
+            "type": "string",
+            "enum": [
+              "captured_as",
+              "normalized_to",
+              "derived_from",
+              "generated_by",
+              "grounded_in",
+              "verified_by",
+              "packaged_as",
+              "published_as",
+              "explained_by"
+            ]
+          },
+          "evidence_refs": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRefs"
+          }
+        }
+      }
+    },
+    "checksums": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/HashRef"
+      },
+      "minItems": 1
+    },
+    "redactions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": []
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    }
+  },
+  "description": "B2 app-level provenance manifest. Preserves business/media lineage beyond the Genblaze manifest.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/provenance-manifest.schema.json",
+  "title": "Lumiq Provenance Manifest",
+  "$comment": "REQ-PROV-001, REQ-PROV-002, REQ-PROV-003, REQ-ASSET-004. Manifest payloads are immutable B2 evidence and must be checksum-covered.",
+  "$defs": {
+    "ProvenanceNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "node_type",
+        "ref_id",
+        "label"
+      ],
+      "properties": {
+        "node_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "node_type": {
+          "type": "string",
+          "enum": [
+            "asset",
+            "generation_run",
+            "publish_package",
+            "catalog_snapshot",
+            "qa_result",
+            "manifest",
+            "policy_decision",
+            "agent_tool_call",
+            "llm_run"
+          ]
+        },
+        "ref_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "asset_role": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AssetRole"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "b2_object": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/B2ObjectRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "ProvenanceEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from_node_id",
+        "to_node_id",
+        "relationship"
+      ],
+      "properties": {
+        "from_node_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "to_node_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "relationship": {
+          "type": "string",
+          "enum": [
+            "captured_as",
+            "normalized_to",
+            "derived_from",
+            "generated_by",
+            "grounded_in",
+            "verified_by",
+            "packaged_as",
+            "published_as",
+            "explained_by"
+          ]
+        },
+        "evidence_refs": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRefs"
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "1.0.0",
+      "manifest_id": "01J0000000000000000000000C",
+      "manifest_type": "generation_provenance",
+      "organization_id": "01J00000000000000000000001",
+      "session_id": "01J00000000000000000000003",
+      "moment_id": "01J00000000000000000000004",
+      "generation_run_id": "01J0000000000000000000000B",
+      "publish_package_id": null,
+      "catalog_snapshot_id": "01J0000000000000000000000D",
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "created_by": "genblaze-worker",
+      "nodes": [
+        {
+          "node_id": "raw_source",
+          "node_type": "asset",
+          "ref_id": "01J00000000000000000000005",
+          "label": "Raw source asset",
+          "asset_role": "raw_source",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "b2_object": {
+            "bucket": "moment-vault-dev-raw",
+            "object_key": "tenants/01J00000000000000000000001/sessions/01J00000000000000000000003/moments/01J00000000000000000000004/raw/source/01J00000000000000000000005.webm",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 5242880
+          },
+          "created_at": "2026-06-26T09:00:00.000Z"
+        },
+        {
+          "node_id": "enhanced_master",
+          "node_type": "asset",
+          "ref_id": "01J00000000000000000000007",
+          "label": "Enhanced master",
+          "asset_role": "enhanced_master",
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "b2_object": {
+            "bucket": "moment-vault-dev-derived",
+            "object_key": "tenants/01J00000000000000000000001/sessions/01J00000000000000000000003/moments/01J00000000000000000000004/runs/01J0000000000000000000000B/outputs/01J00000000000000000000007.mp4",
+            "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "bytes": 7340032
+          },
+          "created_at": "2026-06-26T09:00:00.000Z"
+        }
+      ],
+      "edges": [
+        {
+          "from_node_id": "raw_source",
+          "to_node_id": "enhanced_master",
+          "relationship": "derived_from",
+          "evidence_refs": []
+        }
+      ],
+      "checksums": [
+        {
+          "algorithm": "sha256",
+          "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "redactions": [],
+      "metadata_json": {}
+    }
+  ]
+}

@@ -1,0 +1,532 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "step_graph_id",
+    "template_id",
+    "template_version",
+    "graph_type",
+    "input_contract",
+    "nodes",
+    "edges",
+    "output_contract",
+    "qa_requirements",
+    "cost_policy",
+    "created_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SchemaVersion"
+    },
+    "step_graph_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "template_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_/-]{1,120}$"
+    },
+    "template_version": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Semver"
+    },
+    "graph_type": {
+      "type": "string",
+      "enum": [
+        "enhancement",
+        "thumbnail",
+        "captions",
+        "publish_variant",
+        "qa_auxiliary"
+      ]
+    },
+    "graph_hash": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input_contract": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id",
+          "step_type",
+          "executor",
+          "params",
+          "inputs",
+          "outputs",
+          "retry_policy",
+          "on_failure",
+          "requires"
+        ],
+        "properties": {
+          "step_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_:-]{1,120}$"
+          },
+          "step_type": {
+            "type": "string",
+            "enum": [
+              "load_input_asset",
+              "load_asset",
+              "probe_media",
+              "select_trim_boundaries",
+              "trim_final_boundaries",
+              "normalize_mezzanine",
+              "detect_subject_and_product",
+              "reframe_vertical",
+              "generate_captions",
+              "generate_captions_from_transcript",
+              "render_product_card_overlay",
+              "burn_captions",
+              "generate_thumbnail",
+              "call_genblaze_video_provider",
+              "call_genblaze_image_provider",
+              "run_pre_enhancement_qa",
+              "run_post_enhancement_qa",
+              "write_provenance_manifest",
+              "create_publish_variant"
+            ]
+          },
+          "executor": {
+            "type": "string",
+            "enum": [
+              "media_processing_worker",
+              "genblaze_worker",
+              "qa_worker",
+              "publish_worker",
+              "deterministic_renderer",
+              "ffmpeg_safe_wrapper",
+              "ffprobe_wrapper",
+              "genblaze_provider_step"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "P0",
+              "P1",
+              "P2",
+              "P3"
+            ]
+          },
+          "params": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+          },
+          "inputs": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+          },
+          "outputs": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+          },
+          "retry_policy": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "max_attempts",
+              "backoff",
+              "retry_on"
+            ],
+            "properties": {
+              "max_attempts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "backoff": {
+                "type": "string",
+                "enum": [
+                  "none",
+                  "linear",
+                  "exponential"
+                ]
+              },
+              "retry_on": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              }
+            }
+          },
+          "on_failure": {
+            "type": "string",
+            "enum": [
+              "fail_run",
+              "skip_step",
+              "review_required",
+              "retry_then_fail"
+            ]
+          },
+          "requires": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "capabilities",
+              "asset_roles",
+              "qa_before",
+              "qa_after"
+            ],
+            "properties": {
+              "capabilities": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              },
+              "asset_roles": {
+                "type": "array",
+                "items": {
+                  "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AssetRole"
+                },
+                "uniqueItems": true
+              },
+              "qa_before": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              },
+              "qa_after": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              }
+            }
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "from",
+          "to"
+        ],
+        "properties": {
+          "from": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "to": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          }
+        }
+      }
+    },
+    "output_contract": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "qa_requirements": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "cost_policy": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    }
+  },
+  "description": "Safe template step graph contract. Templates are config; executable step types are code-defined allowlist entries.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/template-step.schema.json",
+  "title": "Lumiq Template Step Graph",
+  "$comment": "REQ-GEN-001, REQ-QA-001, RULE-MEDIA-004. Arbitrary shell commands, arbitrary ffmpeg strings, arbitrary provider calls, SQL, and executable user code are forbidden.",
+  "$defs": {
+    "StepNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_id",
+        "step_type",
+        "executor",
+        "params",
+        "inputs",
+        "outputs",
+        "retry_policy",
+        "on_failure",
+        "requires"
+      ],
+      "properties": {
+        "step_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_:-]{1,120}$"
+        },
+        "step_type": {
+          "type": "string",
+          "enum": [
+            "load_input_asset",
+            "load_asset",
+            "probe_media",
+            "select_trim_boundaries",
+            "trim_final_boundaries",
+            "normalize_mezzanine",
+            "detect_subject_and_product",
+            "reframe_vertical",
+            "generate_captions",
+            "generate_captions_from_transcript",
+            "render_product_card_overlay",
+            "burn_captions",
+            "generate_thumbnail",
+            "call_genblaze_video_provider",
+            "call_genblaze_image_provider",
+            "run_pre_enhancement_qa",
+            "run_post_enhancement_qa",
+            "write_provenance_manifest",
+            "create_publish_variant"
+          ]
+        },
+        "executor": {
+          "type": "string",
+          "enum": [
+            "media_processing_worker",
+            "genblaze_worker",
+            "qa_worker",
+            "publish_worker",
+            "deterministic_renderer",
+            "ffmpeg_safe_wrapper",
+            "ffprobe_wrapper",
+            "genblaze_provider_step"
+          ]
+        },
+        "priority": {
+          "type": "string",
+          "enum": [
+            "P0",
+            "P1",
+            "P2",
+            "P3"
+          ]
+        },
+        "params": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        },
+        "inputs": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        },
+        "outputs": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        },
+        "retry_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "max_attempts",
+            "backoff",
+            "retry_on"
+          ],
+          "properties": {
+            "max_attempts": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5
+            },
+            "backoff": {
+              "type": "string",
+              "enum": [
+                "none",
+                "linear",
+                "exponential"
+              ]
+            },
+            "retry_on": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            }
+          }
+        },
+        "on_failure": {
+          "type": "string",
+          "enum": [
+            "fail_run",
+            "skip_step",
+            "review_required",
+            "retry_then_fail"
+          ]
+        },
+        "requires": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "capabilities",
+            "asset_roles",
+            "qa_before",
+            "qa_after"
+          ],
+          "properties": {
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "asset_roles": {
+              "type": "array",
+              "items": {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AssetRole"
+              },
+              "uniqueItems": true
+            },
+            "qa_before": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "qa_after": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            }
+          }
+        }
+      }
+    },
+    "StepEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "from",
+        "to"
+      ],
+      "properties": {
+        "from": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "to": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "1.0.0",
+      "step_graph_id": "01J0000000000000000000000C",
+      "template_id": "clean_product_reveal",
+      "template_version": "1.0.0",
+      "graph_type": "enhancement",
+      "graph_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "input_contract": {
+        "required_asset_roles": [
+          "raw_mezzanine"
+        ]
+      },
+      "nodes": [
+        {
+          "step_id": "load_input_01",
+          "step_type": "load_input_asset",
+          "executor": "media_processing_worker",
+          "priority": "P0",
+          "params": {},
+          "inputs": {
+            "asset_ref": "input_asset_id"
+          },
+          "outputs": {
+            "working_media_ref": "working_media"
+          },
+          "retry_policy": {
+            "max_attempts": 1,
+            "backoff": "none",
+            "retry_on": []
+          },
+          "on_failure": "fail_run",
+          "requires": {
+            "capabilities": [
+              "generation:execute"
+            ],
+            "asset_roles": [
+              "raw_mezzanine"
+            ],
+            "qa_before": [],
+            "qa_after": []
+          }
+        },
+        {
+          "step_id": "write_provenance_01",
+          "step_type": "write_provenance_manifest",
+          "executor": "genblaze_worker",
+          "priority": "P0",
+          "params": {},
+          "inputs": {
+            "working_media_ref": "working_media"
+          },
+          "outputs": {
+            "manifest_asset_role": "manifest"
+          },
+          "retry_policy": {
+            "max_attempts": 2,
+            "backoff": "exponential",
+            "retry_on": [
+              "transient_b2_error"
+            ]
+          },
+          "on_failure": "fail_run",
+          "requires": {
+            "capabilities": [
+              "manifest:write"
+            ],
+            "asset_roles": [
+              "enhanced_master"
+            ],
+            "qa_before": [],
+            "qa_after": []
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "load_input_01.outputs.working_media_ref",
+          "to": "write_provenance_01.inputs.working_media_ref"
+        }
+      ],
+      "output_contract": {
+        "output_asset_roles": [
+          "enhanced_master",
+          "thumbnail",
+          "captions",
+          "manifest"
+        ]
+      },
+      "qa_requirements": {
+        "post_enhancement_required": true
+      },
+      "cost_policy": {
+        "max_estimated_cost_usd": 0.1
+      },
+      "created_at": "2026-06-26T09:00:00.000Z"
+    }
+  ]
+}

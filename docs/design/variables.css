@@ -1,0 +1,176 @@
+:root {
+  color-scheme: dark;
+
+  /* Brand */
+  --brand-name: "Lumiq";
+  --brand-accent: #365CFF;
+  --brand-accent-hover: #4C6DFF;
+  --brand-accent-pressed: #2948D8;
+
+  /* Primitive color aliases */
+  --color-canvas-black: #000000;
+  --color-shell-black: #050506;
+  --color-panel-black: #0B0B0D;
+  --color-surface-one: #111114;
+  --color-surface-two: #18181D;
+  --color-surface-three: #212129;
+  --color-surface-four: #292934;
+
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B7B7C2;
+  --color-text-muted: #8C8C99;
+  --color-text-faint: #5E5E6B;
+
+  --color-royal-blue: #365CFF;
+  --color-royal-blue-hover: #4C6DFF;
+  --color-royal-blue-pressed: #2948D8;
+  --color-royal-blue-soft: rgba(54, 92, 255, 0.14);
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.22);
+
+  /* Flat gradients — never blur, never glow */
+  --gradient-spectral-pastel: linear-gradient(to right, #f6d1ac, #f3b5d2, #c7b8f5, #a7eadc, #afcdf6);
+  --gradient-ember-rose: linear-gradient(to right, #fc6767, #ec008c);
+
+  /* shadcn-compatible semantic variables */
+  --background: #000000;
+  --foreground: #FFFFFF;
+  --card: #111114;
+  --card-foreground: #FFFFFF;
+  --popover: #292934;
+  --popover-foreground: #FFFFFF;
+  --primary: #365CFF;
+  --primary-foreground: #FFFFFF;
+  --secondary: #18181D;
+  --secondary-foreground: #FFFFFF;
+  --muted: #0B0B0D;
+  --muted-foreground: #8C8C99;
+  --accent: #212129;
+  --accent-foreground: #FFFFFF;
+  --destructive: #FF7A8A;
+  --destructive-foreground: #140407;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.10);
+  --ring: #365CFF;
+
+  --sidebar: #050506;
+  --sidebar-foreground: #B7B7C2;
+  --sidebar-primary: #365CFF;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #111114;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #365CFF;
+
+  /* Semantic statuses */
+  --success: #7BE7A1;
+  --success-bg: rgba(123, 231, 161, 0.10);
+  --success-border: rgba(123, 231, 161, 0.20);
+  --warning: #FFD27A;
+  --warning-bg: rgba(255, 210, 122, 0.10);
+  --warning-border: rgba(255, 210, 122, 0.20);
+  --danger: #FF7A8A;
+  --danger-bg: rgba(255, 122, 138, 0.10);
+  --danger-border: rgba(255, 122, 138, 0.20);
+  --processing: #8FA4FF;
+  --processing-bg: rgba(54, 92, 255, 0.12);
+  --processing-border: rgba(54, 92, 255, 0.24);
+  --neutral: #B7B7C2;
+  --neutral-bg: rgba(255, 255, 255, 0.06);
+  --neutral-border: rgba(255, 255, 255, 0.10);
+
+  /* Typography */
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 650;
+  --font-weight-bold: 700;
+
+  --text-micro: 10px;
+  --leading-micro: 1.25;
+  --tracking-micro: 0.02em;
+  --text-caption: 11px;
+  --leading-caption: 1.3;
+  --tracking-caption: 0px;
+  --text-label: 12px;
+  --leading-label: 1.35;
+  --tracking-label: -0.04px;
+  --text-body-sm: 13px;
+  --leading-body-sm: 1.46;
+  --tracking-body-sm: -0.08px;
+  --text-body: 14px;
+  --leading-body: 1.5;
+  --tracking-body: -0.14px;
+  --text-body-lg: 18px;
+  --leading-body-lg: 1.45;
+  --tracking-body-lg: -0.25px;
+  --text-heading-sm: 20px;
+  --leading-heading-sm: 1.28;
+  --tracking-heading-sm: -0.45px;
+  --text-heading-md: 24px;
+  --leading-heading-md: 1.22;
+  --tracking-heading-md: -0.7px;
+  --text-heading-lg: 32px;
+  --leading-heading-lg: 1.16;
+  --tracking-heading-lg: -1.2px;
+  --text-heading-xl: 40px;
+  --leading-heading-xl: 1.12;
+  --tracking-heading-xl: -1.9px;
+  --text-display: 52px;
+  --leading-display: 1.08;
+  --tracking-display: -3.1px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* Layout */
+  --sidebar-width: 248px;
+  --topbar-height: 64px;
+  --workspace-max-width: 1440px;
+  --content-max-width: 1280px;
+  --panel-padding: 16px;
+  --card-padding: 14px;
+
+  /* Shadows */
+  --shadow-popover: 0 16px 40px rgba(0, 0, 0, 0.42);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.55);
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-linear: linear;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+  }
+}

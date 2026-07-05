@@ -1,0 +1,1182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/nats-events.schema.json",
+  "title": "Lumiq NATS Event Schemas",
+  "description": "Validation entry point for Lumiq NATS event envelopes with event-specific payload schemas embedded in this file.",
+  "$comment": "REQ-EVENT-001, REQ-EVENT-002, REQ-EVENT-003, REQ-EVENT-004, REQ-EVENT-005. NATS transports events; Postgres remains operational truth.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/SessionOpenedEvent"
+    },
+    {
+      "$ref": "#/$defs/SessionClosedEvent"
+    },
+    {
+      "$ref": "#/$defs/SignalDetectedEvent"
+    },
+    {
+      "$ref": "#/$defs/MomentCandidateProposedEvent"
+    },
+    {
+      "$ref": "#/$defs/MomentCaptureAuthorizedEvent"
+    },
+    {
+      "$ref": "#/$defs/MomentRawUploadedEvent"
+    },
+    {
+      "$ref": "#/$defs/GenerationRequestedEvent"
+    },
+    {
+      "$ref": "#/$defs/GenerationStartedEvent"
+    },
+    {
+      "$ref": "#/$defs/GenerationCompletedEvent"
+    },
+    {
+      "$ref": "#/$defs/GenerationFailedEvent"
+    },
+    {
+      "$ref": "#/$defs/QaCompletedEvent"
+    },
+    {
+      "$ref": "#/$defs/ReviewApprovedEvent"
+    },
+    {
+      "$ref": "#/$defs/ReviewRejectedEvent"
+    },
+    {
+      "$ref": "#/$defs/PublishRequestedEvent"
+    },
+    {
+      "$ref": "#/$defs/PublishCompletedEvent"
+    },
+    {
+      "$ref": "#/$defs/AssetDeletedEvent"
+    },
+    {
+      "$ref": "#/$defs/AuditRecordedEvent"
+    },
+    {
+      "$ref": "#/$defs/DeadLetterCreatedEvent"
+    }
+  ],
+  "$defs": {
+    "SessionOpenedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "source_type",
+        "started_at"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "source_type": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SourceType"
+        },
+        "campaign_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "catalog_snapshot_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "started_at": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        }
+      }
+    },
+    "SessionClosedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "ended_at"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "ended_at": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 280
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "SignalDetectedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "signal_id",
+        "signal_type",
+        "t_start_ms",
+        "score"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "signal_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "signal_type": {
+          "type": "string",
+          "enum": [
+            "product_visible",
+            "keyword_hit",
+            "offer_mention",
+            "audio_energy_peak",
+            "scene_change",
+            "manual_marker",
+            "chat_spike"
+          ]
+        },
+        "t_start_ms": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        "t_end_ms": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "score": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Score"
+        },
+        "evidence_ref": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "summary": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "MomentCandidateProposedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "candidate_id",
+        "start_ms",
+        "end_ms",
+        "moment_type",
+        "confidence",
+        "reason"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "candidate_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "start_ms": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        "end_ms": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        "moment_type": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MomentType"
+        },
+        "confidence": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Score"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "evidence_refs": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRefs"
+        },
+        "agent_tool_call_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        }
+      }
+    },
+    "MomentCaptureAuthorizedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "moment_id",
+        "raw_capture_start_ms",
+        "raw_capture_end_ms",
+        "authorization_id"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "raw_capture_start_ms": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        "raw_capture_end_ms": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        "authorization_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "policy_result": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        }
+      }
+    },
+    "MomentRawUploadedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "session_id",
+        "moment_id",
+        "raw_asset_id"
+      ],
+      "properties": {
+        "session_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "raw_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "mezzanine_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "live_transformed_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        }
+      }
+    },
+    "GenerationRequestedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generation_run_id",
+        "moment_id",
+        "input_asset_id",
+        "template_id",
+        "template_version"
+      ],
+      "properties": {
+        "generation_run_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "session_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "input_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "template_id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_/-]{1,120}$"
+        },
+        "template_version": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Semver"
+        },
+        "provider_policy_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "budget_authorization_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        }
+      }
+    },
+    "GenerationStartedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generation_run_id"
+      ],
+      "properties": {
+        "generation_run_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ProviderName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 160
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "GenerationCompletedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generation_run_id",
+        "output_asset_id",
+        "manifest_asset_id"
+      ],
+      "properties": {
+        "generation_run_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "output_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "manifest_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ProviderName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 160
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider_job_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 240
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "actual_cost_usd": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CostUSD"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "GenerationFailedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "generation_run_id",
+        "failure_class",
+        "error_code",
+        "message"
+      ],
+      "properties": {
+        "generation_run_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "failure_class": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaFailureClass"
+        },
+        "error_code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "fallback_attempted": {
+          "type": "boolean"
+        }
+      }
+    },
+    "QaCompletedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "moment_id",
+        "status",
+        "checks"
+      ],
+      "properties": {
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "generation_run_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "passed",
+            "failed",
+            "review_required",
+            "terminal"
+          ]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "check_name",
+              "status"
+            ],
+            "properties": {
+              "check_name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "pass",
+                  "fail",
+                  "uncertain"
+                ]
+              },
+              "failure_class": {
+                "anyOf": [
+                  {
+                    "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaFailureClass"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "reason": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 1000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "ReviewApprovedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "moment_id",
+        "asset_id",
+        "approved_by_user_id"
+      ],
+      "properties": {
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "approved_by_user_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "promote_canonical": {
+          "type": "boolean"
+        }
+      }
+    },
+    "ReviewRejectedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "moment_id",
+        "rejected_by_user_id",
+        "reason"
+      ],
+      "properties": {
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "rejected_by_user_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        }
+      }
+    },
+    "PublishRequestedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publish_package_id",
+        "moment_id",
+        "canonical_asset_id"
+      ],
+      "properties": {
+        "publish_package_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "canonical_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "destinations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "PublishCompletedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publish_package_id",
+        "status"
+      ],
+      "properties": {
+        "publish_package_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ready",
+            "published",
+            "failed"
+          ]
+        },
+        "asset_ids": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULIDArray"
+        },
+        "share_page_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        }
+      }
+    },
+    "AssetDeletedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "delete_status"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "moment_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "delete_status": {
+          "type": "string",
+          "enum": [
+            "soft_deleted",
+            "scheduled_physical_delete",
+            "physically_deleted"
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "AuditRecordedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "audit_event_id",
+        "actor_type",
+        "actor_id",
+        "action"
+      ],
+      "properties": {
+        "audit_event_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "user",
+            "service_agent",
+            "worker",
+            "system"
+          ]
+        },
+        "actor_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "action": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "resource_type": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "resource_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 160
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "DeadLetterCreatedPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dead_letter_event_id",
+        "original_event_type",
+        "error_message"
+      ],
+      "properties": {
+        "dead_letter_event_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "original_event_type": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        "original_event_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "error_message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "consumer": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 160
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "SessionOpenedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "session.opened"
+            },
+            "payload": {
+              "$ref": "#/$defs/SessionOpenedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "SessionClosedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "session.closed"
+            },
+            "payload": {
+              "$ref": "#/$defs/SessionClosedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "SignalDetectedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "signal.detected"
+            },
+            "payload": {
+              "$ref": "#/$defs/SignalDetectedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "MomentCandidateProposedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "moment.candidate.proposed"
+            },
+            "payload": {
+              "$ref": "#/$defs/MomentCandidateProposedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "MomentCaptureAuthorizedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "moment.capture.authorized"
+            },
+            "payload": {
+              "$ref": "#/$defs/MomentCaptureAuthorizedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "MomentRawUploadedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "moment.raw.uploaded"
+            },
+            "payload": {
+              "$ref": "#/$defs/MomentRawUploadedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "GenerationRequestedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "generation.requested"
+            },
+            "payload": {
+              "$ref": "#/$defs/GenerationRequestedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "GenerationStartedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "generation.started"
+            },
+            "payload": {
+              "$ref": "#/$defs/GenerationStartedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "GenerationCompletedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "generation.completed"
+            },
+            "payload": {
+              "$ref": "#/$defs/GenerationCompletedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "GenerationFailedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "generation.failed"
+            },
+            "payload": {
+              "$ref": "#/$defs/GenerationFailedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "QaCompletedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "qa.completed"
+            },
+            "payload": {
+              "$ref": "#/$defs/QaCompletedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "ReviewApprovedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "review.approved"
+            },
+            "payload": {
+              "$ref": "#/$defs/ReviewApprovedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "ReviewRejectedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "review.rejected"
+            },
+            "payload": {
+              "$ref": "#/$defs/ReviewRejectedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "PublishRequestedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "publish.requested"
+            },
+            "payload": {
+              "$ref": "#/$defs/PublishRequestedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "PublishCompletedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "publish.completed"
+            },
+            "payload": {
+              "$ref": "#/$defs/PublishCompletedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "AssetDeletedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "asset.deleted"
+            },
+            "payload": {
+              "$ref": "#/$defs/AssetDeletedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "AuditRecordedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "audit.recorded"
+            },
+            "payload": {
+              "$ref": "#/$defs/AuditRecordedPayload"
+            }
+          }
+        }
+      ]
+    },
+    "DeadLetterCreatedEvent": {
+      "allOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/event-envelope.schema.json"
+        },
+        {
+          "type": "object",
+          "required": [
+            "event_type",
+            "payload"
+          ],
+          "properties": {
+            "event_type": {
+              "const": "dead_letter.event.created"
+            },
+            "payload": {
+              "$ref": "#/$defs/DeadLetterCreatedPayload"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "examples": [
+    {
+      "event_id": "01J0000000000000000000000Q",
+      "event_type": "generation.completed",
+      "schema_version": "1.0.0",
+      "organization_id": "01J00000000000000000000001",
+      "occurred_at": "2026-06-26T09:00:00.000Z",
+      "producer": "core-api",
+      "idempotency_key": "generation:01J0000000000000000000000B:completed",
+      "correlation_id": "corr_demo_01",
+      "trace_id": "trace_demo_01",
+      "payload": {
+        "generation_run_id": "01J0000000000000000000000B",
+        "moment_id": "01J00000000000000000000004",
+        "output_asset_id": "01J00000000000000000000007",
+        "manifest_asset_id": "01J0000000000000000000000A",
+        "provider": "genblaze",
+        "model": "configured_model",
+        "provider_job_ref": "gb_demo_job_01",
+        "actual_cost_usd": 0.04
+      }
+    }
+  ]
+}

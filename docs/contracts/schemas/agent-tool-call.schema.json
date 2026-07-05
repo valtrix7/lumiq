@@ -1,0 +1,184 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "tool_call_id",
+    "agent_id",
+    "tool_name",
+    "organization_id",
+    "idempotency_key",
+    "trace_id",
+    "status",
+    "payload",
+    "created_at"
+  ],
+  "properties": {
+    "tool_call_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "agent_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AgentId"
+    },
+    "tool_name": {
+      "type": "string",
+      "enum": [
+        "read_session_context",
+        "read_candidate_evidence",
+        "read_catalog_snapshot",
+        "read_org_memory",
+        "validate_product_match",
+        "suggest_template",
+        "suggest_boundaries",
+        "propose_moment_candidate",
+        "generate_caption_options",
+        "explain_qa_result",
+        "explain_provenance"
+      ]
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "requested_by_user_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "service_identity_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "idempotency_key": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/IdempotencyKey"
+    },
+    "trace_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/TraceId"
+    },
+    "correlation_id": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CorrelationId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "started",
+        "succeeded",
+        "failed",
+        "denied"
+      ]
+    },
+    "input_hash": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "output_hash": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "payload": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "result_payload": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error_code": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 120
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "policy_result": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "description": "Mastra agent tool-call envelope. Side effects remain gateway-only and audited.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/agent-tool-call.schema.json",
+  "title": "Lumiq Agent Tool Call",
+  "$comment": "REQ-AGENT-003, REQ-AGENT-004, REQ-AGENT-005, REQ-SEC-003. Agents recommend; Core API authorizes.",
+  "examples": [
+    {
+      "tool_call_id": "01J0000000000000000000000N",
+      "agent_id": "supervisor-agent-v1",
+      "tool_name": "propose_moment_candidate",
+      "organization_id": "01J00000000000000000000001",
+      "session_id": "01J00000000000000000000003",
+      "moment_id": null,
+      "requested_by_user_id": null,
+      "service_identity_id": null,
+      "idempotency_key": "agent-tool:supervisor:01J00000000000000000000004",
+      "trace_id": "trace_demo_01",
+      "correlation_id": "corr_demo_01",
+      "status": "succeeded",
+      "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "output_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "payload": {
+        "candidate_window_ms": [
+          27000,
+          45000
+        ]
+      },
+      "result_payload": {
+        "confidence": 0.93
+      },
+      "error_code": null,
+      "policy_result": {
+        "allowed": true
+      },
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "completed_at": "2026-06-26T09:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,388 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "publish_package_id",
+    "organization_id",
+    "moment_id",
+    "status",
+    "canonical_asset_id",
+    "variants",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "publish_package_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "status": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/PublishPackageStatus"
+    },
+    "canonical_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "thumbnail_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "captions_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "provenance_manifest_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 120
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 2200
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "hashtags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^#[A-Za-z0-9_]{1,60}$"
+      },
+      "uniqueItems": true
+    },
+    "product_links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "url"
+        ],
+        "properties": {
+          "product_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "url": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/URI"
+          },
+          "label": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "publish_variant_id",
+          "destination",
+          "asset_id",
+          "format",
+          "status"
+        ],
+        "properties": {
+          "publish_variant_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "destination": {
+            "type": "string",
+            "enum": [
+              "internal_library",
+              "download_zip",
+              "signed_share_link",
+              "tiktok_draft",
+              "instagram_reels",
+              "youtube_shorts",
+              "shopify_media",
+              "web"
+            ]
+          },
+          "asset_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "format": {
+            "type": "string",
+            "enum": [
+              "mp4",
+              "webm",
+              "jpg",
+              "png",
+              "vtt",
+              "srt",
+              "json",
+              "zip"
+            ]
+          },
+          "aspect_ratio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "9:16",
+                  "1:1",
+                  "16:9"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "width": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "height": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "ready",
+              "failed",
+              "published",
+              "revoked"
+            ]
+          }
+        }
+      }
+    },
+    "approved_by_user_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "approved_at": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "share_page_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "updated_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    }
+  },
+  "description": "Canonical publish package contract. External destinations are adapters; the vault remains source of truth.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/publish-package.schema.json",
+  "title": "Lumiq Publish Package",
+  "$comment": "REQ-PUBLISH-001, REQ-PUBLISH-002, REQ-PUBLISH-004, REQ-CATALOG-006. Human approval is default before publish/share unless explicit policy allows automation.",
+  "$defs": {
+    "PublishVariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "publish_variant_id",
+        "destination",
+        "asset_id",
+        "format",
+        "status"
+      ],
+      "properties": {
+        "publish_variant_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "destination": {
+          "type": "string",
+          "enum": [
+            "internal_library",
+            "download_zip",
+            "signed_share_link",
+            "tiktok_draft",
+            "instagram_reels",
+            "youtube_shorts",
+            "shopify_media",
+            "web"
+          ]
+        },
+        "asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "mp4",
+            "webm",
+            "jpg",
+            "png",
+            "vtt",
+            "srt",
+            "json",
+            "zip"
+          ]
+        },
+        "aspect_ratio": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "9:16",
+                "1:1",
+                "16:9"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "width": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "height": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "ready",
+            "failed",
+            "published",
+            "revoked"
+          ]
+        }
+      }
+    },
+    "ProductLink": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_id",
+        "url"
+      ],
+      "properties": {
+        "product_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "url": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/URI"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 120
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "publish_package_id": "01J0000000000000000000000K",
+      "organization_id": "01J00000000000000000000001",
+      "moment_id": "01J00000000000000000000004",
+      "status": "ready",
+      "canonical_asset_id": "01J00000000000000000000007",
+      "thumbnail_asset_id": "01J00000000000000000000008",
+      "captions_asset_id": "01J00000000000000000000009",
+      "provenance_manifest_asset_id": "01J0000000000000000000000A",
+      "title": "Aster Everyday Crossbody reveal",
+      "description": "A clean product reveal using verified launch offer facts.",
+      "hashtags": [
+        "#AsterDemo"
+      ],
+      "product_links": [
+        {
+          "product_id": "01J0000000000000000000000E",
+          "url": "https://example.com/products/aster-everyday-crossbody",
+          "label": "Aster Everyday Crossbody"
+        }
+      ],
+      "variants": [
+        {
+          "publish_variant_id": "01J0000000000000000000000M",
+          "destination": "signed_share_link",
+          "asset_id": "01J00000000000000000000007",
+          "format": "mp4",
+          "aspect_ratio": "9:16",
+          "width": 1080,
+          "height": 1920,
+          "status": "ready"
+        }
+      ],
+      "approved_by_user_id": null,
+      "approved_at": null,
+      "share_page_id": "01J0000000000000000000000W",
+      "metadata_json": {},
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "updated_at": "2026-06-26T09:00:00.000Z"
+    }
+  ]
+}

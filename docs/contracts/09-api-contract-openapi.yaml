@@ -1,0 +1,2135 @@
+openapi: 3.1.1
+info:
+  title: Lumiq Core API
+  version: 0.1.0
+  summary: HTTP/RPC API contract for Lumiq — Live Commerce Moment Vault.
+  description: |
+    Machine-readable OpenAPI contract for Lumiq's Core API.
+
+    This contract is optimized for both human engineers and AI coding agents.
+    It defines the authenticated product API, internal agent tool gateway,
+    and internal worker callback API.
+
+    Architecture rules:
+      - Clerk authenticates human users.
+      - Core API owns authorization, policy, state transitions, budgets, and audit.
+      - Agents use only typed internal tool gateways.
+      - Workers report results through internal worker endpoints.
+      - B2 object writes are represented through asset records and signed URLs.
+      - Generated media is tracked through generation_runs and provenance.
+      - Product facts must be grounded in catalog snapshots before publish.
+
+    Related documents:
+      - 00-spec-index.md
+      - 01-product-requirements.md
+      - 02-project-constitution.md
+      - 03-glossary-domain-language.md
+      - 04-requirements-ears.md
+      - 05-user-flows-ux-spec.md
+      - 06-system-architecture-c4.md
+      - 07-service-decomposition.md
+      - 08-data-model-database-schema.md
+  contact:
+    name: Lumiq Engineering
+  license:
+    name: Proprietary
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+servers:
+  - url: https://api.lumiq.app
+    description: Production API
+  - url: https://staging-api.lumiq.app
+    description: Staging API
+  - url: http://localhost:3000
+    description: Local development API
+security:
+  - ClerkBearerAuth: []
+tags:
+  - name: Health
+  - name: Identity
+  - name: Organizations
+  - name: Catalog
+  - name: Campaigns
+  - name: Sessions
+  - name: Moments
+  - name: Assets
+  - name: Generation
+  - name: Review
+  - name: Publishing
+  - name: Share
+  - name: Admin
+  - name: AgentTools
+  - name: WorkerCallbacks
+x-lumiq-contract:
+  document_id: 09-api-contract-openapi.yaml
+  contract_status: draft
+  source_documents:
+    - 01-product-requirements.md
+    - 02-project-constitution.md
+    - 03-glossary-domain-language.md
+    - 04-requirements-ears.md
+    - 07-service-decomposition.md
+    - 08-data-model-database-schema.md
+  implementation_rules:
+    - Core API owns business state transitions.
+    - Every command must be authenticated and organization-scoped unless explicitly public.
+    - Every mutating command must accept or derive an idempotency key.
+    - Every sensitive command must write an audit event.
+    - Agent endpoints are internal only and require service identity auth.
+    - Worker callback endpoints are internal only and require service identity auth.
+    - Do not expose raw provider or B2 credentials to browsers or agents.
+paths:
+  /healthz:
+    get:
+      tags: [Health]
+      operationId: getHealth
+      summary: Health check.
+      security: []
+      responses:
+        "200":
+          description: Service is healthy.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /api/me:
+    get:
+      tags: [Identity]
+      operationId: getCurrentUser
+      summary: Return current user and organizations.
+      responses:
+        "200":
+          description: Current user context.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUserResponse"
+
+  /api/organizations:
+    get:
+      tags: [Organizations]
+      operationId: listOrganizations
+      summary: List organizations available to the current user.
+      responses:
+        "200":
+          description: Organizations.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [organizations]
+                properties:
+                  organizations:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Organization"
+
+    post:
+      tags: [Organizations]
+      operationId: createOrganization
+      summary: Create a new organization.
+      x-lumiq:
+        requirement_ids: [REQ-AUTH-002]
+        capability: organization:create
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrganizationRequest"
+      responses:
+        "201":
+          description: Created organization.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Organization"
+
+  /api/organizations/{organization_id}/setup-status:
+    get:
+      tags: [Organizations]
+      operationId: getOrganizationSetupStatus
+      summary: Return setup checklist for setup-first onboarding.
+      parameters:
+        - $ref: "#/components/parameters/OrganizationId"
+      responses:
+        "200":
+          description: Setup status.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetupStatus"
+
+  /api/catalog/products:
+    get:
+      tags: [Catalog]
+      operationId: listProducts
+      summary: List products for an organization.
+      parameters:
+        - $ref: "#/components/parameters/OrganizationQuery"
+        - name: query
+          in: query
+          schema: { type: string }
+        - name: campaign_id
+          in: query
+          schema: { $ref: "#/components/schemas/ULID" }
+        - $ref: "#/components/parameters/PageCursor"
+        - $ref: "#/components/parameters/PageLimit"
+      responses:
+        "200":
+          description: Products.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, page]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Product" }
+                  page: { $ref: "#/components/schemas/PageMeta" }
+
+    post:
+      tags: [Catalog]
+      operationId: createProduct
+      summary: Create a product in the organization catalog.
+      x-lumiq:
+        requirement_ids: [REQ-CATALOG-001]
+        capability: catalog:write
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProductRequest"
+      responses:
+        "201":
+          description: Product created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /api/catalog/products/{product_id}:
+    get:
+      tags: [Catalog]
+      operationId: getProduct
+      summary: Get product details.
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+      responses:
+        "200":
+          description: Product.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+
+    patch:
+      tags: [Catalog]
+      operationId: updateProduct
+      summary: Update product fields.
+      x-lumiq:
+        capability: catalog:write
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/ProductId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateProductRequest" }
+      responses:
+        "200":
+          description: Updated product.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Product" }
+
+  /api/catalog/import-csv:
+    post:
+      tags: [Catalog]
+      operationId: importCatalogCsv
+      summary: Import products from CSV.
+      x-lumiq:
+        requirement_ids: [REQ-CATALOG-002]
+        capability: catalog:write
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [organization_id, file]
+              properties:
+                organization_id: { $ref: "#/components/schemas/ULID" }
+                file:
+                  type: string
+                  format: binary
+      responses:
+        "202":
+          description: Import accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ImportJob" }
+
+  /api/catalog/snapshots:
+    post:
+      tags: [Catalog]
+      operationId: createCatalogSnapshot
+      summary: Create a catalog snapshot for a session/campaign.
+      x-lumiq:
+        requirement_ids: [REQ-CATALOG-003, REQ-CATALOG-004]
+        capability: catalog:snapshot
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCatalogSnapshotRequest" }
+      responses:
+        "201":
+          description: Created snapshot.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CatalogSnapshot" }
+
+  /api/campaigns:
+    get:
+      tags: [Campaigns]
+      operationId: listCampaigns
+      summary: List campaigns.
+      parameters:
+        - $ref: "#/components/parameters/OrganizationQuery"
+      responses:
+        "200":
+          description: Campaigns.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Campaign" }
+
+    post:
+      tags: [Campaigns]
+      operationId: createCampaign
+      summary: Create a campaign/offer context.
+      x-lumiq:
+        capability: campaign:write
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateCampaignRequest" }
+      responses:
+        "201":
+          description: Created campaign.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Campaign" }
+
+  /api/sessions:
+    get:
+      tags: [Sessions]
+      operationId: listSessions
+      summary: List sessions.
+      parameters:
+        - $ref: "#/components/parameters/OrganizationQuery"
+        - name: status
+          in: query
+          schema: { $ref: "#/components/schemas/SessionStatus" }
+        - $ref: "#/components/parameters/PageCursor"
+        - $ref: "#/components/parameters/PageLimit"
+      responses:
+        "200":
+          description: Sessions.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, page]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Session" }
+                  page: { $ref: "#/components/schemas/PageMeta" }
+
+    post:
+      tags: [Sessions]
+      operationId: createSession
+      summary: Create a session in created state.
+      x-lumiq:
+        requirement_ids: [REQ-SESSION-001]
+        capability: session:create
+        audit: true
+        emits: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateSessionRequest" }
+      responses:
+        "201":
+          description: Session created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+
+  /api/sessions/{session_id}:
+    get:
+      tags: [Sessions]
+      operationId: getSession
+      summary: Get session details.
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+      responses:
+        "200":
+          description: Session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+
+  /api/sessions/{session_id}/preflight:
+    post:
+      tags: [Sessions]
+      operationId: validateSessionPreflight
+      summary: Validate source, catalog, campaign, recording policy, and budget before Live Studio.
+      x-lumiq:
+        requirement_ids: [REQ-SESSION-002, REQ-CATALOG-003]
+        capability: session:create
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SessionPreflightRequest" }
+      responses:
+        "200":
+          description: Preflight result.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionPreflightResult" }
+
+  /api/sessions/{session_id}/start:
+    post:
+      tags: [Sessions]
+      operationId: startSession
+      summary: Start a session and emit session.opened.
+      x-lumiq:
+        requirement_ids: [REQ-SESSION-004]
+        capability: session:create
+        audit: true
+        emits: [session.opened]
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StartSessionRequest" }
+      responses:
+        "200":
+          description: Session started.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+
+  /api/sessions/{session_id}/end:
+    post:
+      tags: [Sessions]
+      operationId: endSession
+      summary: End a session.
+      x-lumiq:
+        requirement_ids: [REQ-SESSION-005]
+        capability: session:end
+        audit: true
+        emits: [session.closed]
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        "200":
+          description: Session ending/closed.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+
+  /api/sessions/{session_id}/timeline:
+    get:
+      tags: [Sessions]
+      operationId: getSessionTimeline
+      summary: Get session timeline with signals, candidates, moments, and transcript snippets.
+      parameters:
+        - $ref: "#/components/parameters/SessionId"
+      responses:
+        "200":
+          description: Timeline.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SessionTimeline" }
+
+  /api/moments:
+    get:
+      tags: [Moments]
+      operationId: listMoments
+      summary: List moments with structured filters.
+      parameters:
+        - $ref: "#/components/parameters/OrganizationQuery"
+        - name: session_id
+          in: query
+          schema: { $ref: "#/components/schemas/ULID" }
+        - name: product_id
+          in: query
+          schema: { $ref: "#/components/schemas/ULID" }
+        - name: campaign_id
+          in: query
+          schema: { $ref: "#/components/schemas/ULID" }
+        - name: state
+          in: query
+          schema: { $ref: "#/components/schemas/MomentState" }
+        - name: query
+          in: query
+          schema: { type: string }
+        - $ref: "#/components/parameters/PageCursor"
+        - $ref: "#/components/parameters/PageLimit"
+      responses:
+        "200":
+          description: Moments.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, page]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/Moment" }
+                  page: { $ref: "#/components/schemas/PageMeta" }
+
+  /api/moments/{moment_id}:
+    get:
+      tags: [Moments]
+      operationId: getMoment
+      summary: Get moment detail.
+      parameters:
+        - $ref: "#/components/parameters/MomentId"
+      responses:
+        "200":
+          description: Moment.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MomentDetail" }
+
+  /api/moments/{moment_id}/approve:
+    post:
+      tags: [Review]
+      operationId: approveMoment
+      summary: Approve a moment/version for canonical or publish readiness.
+      x-lumiq:
+        requirement_ids: [REQ-REVIEW-005]
+        capability: moment:approve
+        audit: true
+        emits: [review.approved]
+      parameters:
+        - $ref: "#/components/parameters/MomentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ApproveMomentRequest" }
+      responses:
+        "200":
+          description: Moment approved.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Moment" }
+
+  /api/moments/{moment_id}/reject:
+    post:
+      tags: [Review]
+      operationId: rejectMoment
+      summary: Reject a moment or version.
+      x-lumiq:
+        capability: moment:reject
+        audit: true
+        emits: [review.rejected]
+      parameters:
+        - $ref: "#/components/parameters/MomentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RejectMomentRequest" }
+      responses:
+        "200":
+          description: Moment rejected.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Moment" }
+
+  /api/moments/{moment_id}/rerender:
+    post:
+      tags: [Generation]
+      operationId: rerenderMoment
+      summary: Request a new immutable generated version for a moment.
+      x-lumiq:
+        requirement_ids: [REQ-GEN-005, REQ-REVIEW-004]
+        capability: generation:rerun
+        audit: true
+        emits: [generation.requested]
+      parameters:
+        - $ref: "#/components/parameters/MomentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/RerenderMomentRequest" }
+      responses:
+        "202":
+          description: Rerender accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/GenerationRun" }
+
+  /api/moments/{moment_id}/promote-canonical:
+    post:
+      tags: [Review]
+      operationId: promoteCanonicalMomentVersion
+      summary: Promote a generated version as canonical.
+      x-lumiq:
+        capability: moment:approve
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/MomentId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [asset_id]
+              properties:
+                asset_id: { $ref: "#/components/schemas/ULID" }
+                reason: { type: string }
+      responses:
+        "200":
+          description: Canonical version promoted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Moment" }
+
+  /api/moments/{moment_id}/compare:
+    get:
+      tags: [Moments]
+      operationId: getMomentCompare
+      summary: Get raw/enhanced/published comparison data and signed URLs.
+      parameters:
+        - $ref: "#/components/parameters/MomentId"
+      responses:
+        "200":
+          description: Compare data.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/MomentCompare" }
+
+  /api/moments/{moment_id}/provenance:
+    get:
+      tags: [Moments]
+      operationId: getMomentProvenance
+      summary: Get lineage graph for a moment.
+      parameters:
+        - $ref: "#/components/parameters/MomentId"
+      responses:
+        "200":
+          description: Provenance graph.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ProvenanceGraph" }
+
+  /api/assets/{asset_id}:
+    get:
+      tags: [Assets]
+      operationId: getAsset
+      summary: Get asset metadata.
+      parameters:
+        - $ref: "#/components/parameters/AssetId"
+      responses:
+        "200":
+          description: Asset metadata.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Asset" }
+
+  /api/assets/{asset_id}/signed-url:
+    post:
+      tags: [Assets]
+      operationId: createAssetSignedUrl
+      summary: Create a short-lived signed URL for an asset.
+      x-lumiq:
+        capability: asset:view
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/AssetId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                purpose:
+                  type: string
+                  enum: [preview, download, internal_worker]
+                expires_in_seconds:
+                  type: integer
+                  minimum: 60
+                  maximum: 3600
+                  default: 900
+      responses:
+        "200":
+          description: Signed URL.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SignedUrlResponse" }
+
+  /api/assets/{asset_id}/delete:
+    post:
+      tags: [Assets]
+      operationId: deleteAsset
+      summary: Soft delete an asset and schedule physical deletion where policy allows.
+      x-lumiq:
+        capability: asset:delete
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/AssetId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DeleteAssetRequest" }
+      responses:
+        "202":
+          description: Delete accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeletionResult" }
+
+  /api/review-queue:
+    get:
+      tags: [Review]
+      operationId: getReviewQueue
+      summary: Get review queue with publish-readiness cards.
+      parameters:
+        - $ref: "#/components/parameters/OrganizationQuery"
+        - name: view
+          in: query
+          schema:
+            type: string
+            enum: [global, by_session, by_campaign, publish_ready, needs_review, failed]
+        - name: session_id
+          in: query
+          schema: { $ref: "#/components/schemas/ULID" }
+        - name: campaign_id
+          in: query
+          schema: { $ref: "#/components/schemas/ULID" }
+        - $ref: "#/components/parameters/PageCursor"
+        - $ref: "#/components/parameters/PageLimit"
+      responses:
+        "200":
+          description: Review queue.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, page]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/ReviewQueueItem" }
+                  page: { $ref: "#/components/schemas/PageMeta" }
+
+  /api/publish-packages:
+    post:
+      tags: [Publishing]
+      operationId: createPublishPackage
+      summary: Create a publish package from a canonical enhanced asset.
+      x-lumiq:
+        requirement_ids: [REQ-PUBLISH-001]
+        capability: publish:create
+        audit: true
+        emits: [publish.requested]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePublishPackageRequest" }
+      responses:
+        "202":
+          description: Publish package creation accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublishPackage" }
+
+  /api/publish-packages/{publish_package_id}:
+    get:
+      tags: [Publishing]
+      operationId: getPublishPackage
+      summary: Get publish package.
+      parameters:
+        - $ref: "#/components/parameters/PublishPackageId"
+      responses:
+        "200":
+          description: Publish package.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublishPackage" }
+
+  /api/publish-packages/{publish_package_id}/approve:
+    post:
+      tags: [Publishing]
+      operationId: approvePublishPackage
+      summary: Approve a publish package for external/share use.
+      x-lumiq:
+        requirement_ids: [REQ-PUBLISH-002]
+        capability: publish:approve
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/PublishPackageId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision:
+                  type: string
+                  enum: [approve]
+                reason: { type: string }
+      responses:
+        "200":
+          description: Approved package.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublishPackage" }
+
+  /api/publish-packages/{publish_package_id}/create-share-page:
+    post:
+      tags: [Share]
+      operationId: createSharePage
+      summary: Create a share page for a publish package.
+      x-lumiq:
+        requirement_ids: [REQ-PUBLISH-004]
+        capability: publish:create
+        audit: true
+      parameters:
+        - $ref: "#/components/parameters/PublishPackageId"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateSharePageRequest" }
+      responses:
+        "201":
+          description: Share page created.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SharePage" }
+
+  /api/share/{share_slug}:
+    get:
+      tags: [Share]
+      operationId: getSharePage
+      summary: Get public/private share page data.
+      security: []
+      parameters:
+        - name: share_slug
+          in: path
+          required: true
+          schema: { type: string, minLength: 6, maxLength: 64 }
+      responses:
+        "200":
+          description: Share page data.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/PublicSharePageResponse" }
+        "403":
+          description: Private or unauthorized share page.
+
+  /api/admin/dlq:
+    get:
+      tags: [Admin]
+      operationId: listDeadLetterEvents
+      summary: List dead-letter events.
+      x-lumiq:
+        capability: admin:recover
+      parameters:
+        - $ref: "#/components/parameters/OrganizationQuery"
+        - name: event_type
+          in: query
+          schema: { type: string }
+        - name: status
+          in: query
+          schema: { type: string, enum: [open, retried, terminal, skipped] }
+      responses:
+        "200":
+          description: Dead-letter events.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/DeadLetterEvent" }
+
+  /api/admin/dlq/{dead_letter_event_id}/retry:
+    post:
+      tags: [Admin]
+      operationId: retryDeadLetterEvent
+      summary: Retry a dead-letter event.
+      x-lumiq:
+        capability: admin:recover
+        audit: true
+      parameters:
+        - name: dead_letter_event_id
+          in: path
+          required: true
+          schema: { $ref: "#/components/schemas/ULID" }
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 3 }
+      responses:
+        "202":
+          description: Retry accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AdminActionResult" }
+
+  /internal/agent-tools/propose-moment-candidate:
+    post:
+      tags: [AgentTools]
+      operationId: agentProposeMomentCandidate
+      summary: Internal tool endpoint for agents to propose a moment candidate.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        requirement_ids: [REQ-AGENT-003, REQ-SIGNAL-002]
+        agent_tool: propose_moment_candidate
+        audit: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AgentProposeMomentCandidateRequest" }
+      responses:
+        "200":
+          description: Candidate accepted/recorded or rejected by policy.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentToolResult" }
+
+  /internal/agent-tools/suggest-template:
+    post:
+      tags: [AgentTools]
+      operationId: agentSuggestTemplate
+      summary: Internal tool endpoint for template recommendation.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        agent_tool: suggest_template
+        audit: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AgentSuggestTemplateRequest" }
+      responses:
+        "200":
+          description: Template suggestion recorded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentToolResult" }
+
+  /internal/agent-tools/validate-product-match:
+    post:
+      tags: [AgentTools]
+      operationId: agentValidateProductMatch
+      summary: Internal tool endpoint to record product match validation.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        agent_tool: validate_product_match
+        audit: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AgentValidateProductMatchRequest" }
+      responses:
+        "200":
+          description: Product match result recorded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentToolResult" }
+
+  /internal/agent-tools/explain-qa-result:
+    post:
+      tags: [AgentTools]
+      operationId: agentExplainQaResult
+      summary: Internal tool endpoint to create a human-readable QA explanation.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        agent_tool: explain_qa_result
+        audit: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/AgentExplainQaResultRequest" }
+      responses:
+        "200":
+          description: Explanation recorded.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/AgentToolResult" }
+
+  /internal/workers/capture-completed:
+    post:
+      tags: [WorkerCallbacks]
+      operationId: workerCaptureCompleted
+      summary: Capture Worker reports raw/mezzanine upload completion.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        worker: capture-worker
+        audit: true
+        emits: [moment.raw.uploaded]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CaptureCompletedRequest" }
+      responses:
+        "200":
+          description: Capture state accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkerCallbackResult" }
+
+  /internal/workers/generation-started:
+    post:
+      tags: [WorkerCallbacks]
+      operationId: workerGenerationStarted
+      summary: Genblaze Worker reports generation start.
+      security:
+        - ServiceBearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GenerationStartedRequest" }
+      responses:
+        "200":
+          description: Generation state accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkerCallbackResult" }
+
+  /internal/workers/generation-completed:
+    post:
+      tags: [WorkerCallbacks]
+      operationId: workerGenerationCompleted
+      summary: Genblaze Worker reports successful generation completion.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        worker: genblaze-worker
+        audit: true
+        emits: [generation.completed]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GenerationCompletedRequest" }
+      responses:
+        "200":
+          description: Generation completion accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkerCallbackResult" }
+
+  /internal/workers/generation-failed:
+    post:
+      tags: [WorkerCallbacks]
+      operationId: workerGenerationFailed
+      summary: Genblaze Worker reports generation failure.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        worker: genblaze-worker
+        audit: true
+        emits: [generation.failed]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/GenerationFailedRequest" }
+      responses:
+        "200":
+          description: Failure accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkerCallbackResult" }
+
+  /internal/workers/qa-completed:
+    post:
+      tags: [WorkerCallbacks]
+      operationId: workerQaCompleted
+      summary: QA Worker reports QA result.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        worker: qa-worker
+        audit: true
+        emits: [qa.completed]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/QaCompletedRequest" }
+      responses:
+        "200":
+          description: QA result accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkerCallbackResult" }
+
+  /internal/workers/publish-completed:
+    post:
+      tags: [WorkerCallbacks]
+      operationId: workerPublishCompleted
+      summary: Publish Worker reports publish package completion.
+      security:
+        - ServiceBearerAuth: []
+      x-lumiq:
+        internal: true
+        worker: publish-worker
+        audit: true
+        emits: [publish.completed]
+      parameters:
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PublishCompletedRequest" }
+      responses:
+        "200":
+          description: Publish completion accepted.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WorkerCallbackResult" }
+
+components:
+  securitySchemes:
+    ClerkBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk-issued user session JWT.
+    ServiceBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Internal service identity token for workers and Mastra Agent Service.
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 256
+      description: Stable idempotency key for mutating commands. Required by implementation even when technically optional in draft.
+    OrganizationId:
+      name: organization_id
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/ULID" }
+    OrganizationQuery:
+      name: organization_id
+      in: query
+      required: true
+      schema: { $ref: "#/components/schemas/ULID" }
+    SessionId:
+      name: session_id
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/ULID" }
+    MomentId:
+      name: moment_id
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/ULID" }
+    ProductId:
+      name: product_id
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/ULID" }
+    AssetId:
+      name: asset_id
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/ULID" }
+    PublishPackageId:
+      name: publish_package_id
+      in: path
+      required: true
+      schema: { $ref: "#/components/schemas/ULID" }
+    PageCursor:
+      name: cursor
+      in: query
+      required: false
+      schema: { type: string }
+    PageLimit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 25
+
+  responses:
+    Unauthorized:
+      description: Missing or invalid authentication.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Forbidden:
+      description: Authenticated but missing capability or organization scope.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    Conflict:
+      description: State conflict or idempotency conflict.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+    ValidationError:
+      description: Invalid request.
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorResponse" }
+
+  schemas:
+    ULID:
+      type: string
+      pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+      examples: [01HY7Y9Q6JVK2QF0S4W3X4T5P9]
+
+    ISODateTime:
+      type: string
+      format: date-time
+
+    HealthResponse:
+      type: object
+      required: [status, service, version]
+      properties:
+        status: { type: string, enum: [ok] }
+        service: { type: string, const: lumiq-core-api }
+        version: { type: string }
+
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            request_id: { type: string }
+            trace_id: { type: string }
+            details: { type: object, additionalProperties: true }
+
+    PageMeta:
+      type: object
+      required: [has_more]
+      properties:
+        next_cursor: { type: [string, "null"] }
+        has_more: { type: boolean }
+
+    CurrentUserResponse:
+      type: object
+      required: [user, organizations]
+      properties:
+        user: { $ref: "#/components/schemas/User" }
+        organizations:
+          type: array
+          items: { $ref: "#/components/schemas/OrganizationMembership" }
+
+    User:
+      type: object
+      required: [user_id, clerk_user_id, email, created_at]
+      properties:
+        user_id: { $ref: "#/components/schemas/ULID" }
+        clerk_user_id: { type: string }
+        email: { type: string, format: email }
+        display_name: { type: [string, "null"] }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    Organization:
+      type: object
+      required: [organization_id, name, created_at]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        name: { type: string }
+        slug: { type: string }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    OrganizationMembership:
+      type: object
+      required: [organization, role, capabilities]
+      properties:
+        organization: { $ref: "#/components/schemas/Organization" }
+        role: { type: string, enum: [owner, admin, editor, reviewer, viewer] }
+        capabilities:
+          type: array
+          items: { type: string }
+
+    CreateOrganizationRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 2 }
+        slug: { type: string }
+
+    SetupStatus:
+      type: object
+      required: [organization_id, complete, checklist]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        complete: { type: boolean }
+        checklist:
+          type: array
+          items:
+            type: object
+            required: [key, status, required]
+            properties:
+              key:
+                type: string
+                enum: [brand, products, campaign, catalog_snapshot, budget_policy, provider_ready]
+              status: { type: string, enum: [missing, complete, warning] }
+              required: { type: boolean }
+              message: { type: string }
+
+    Product:
+      type: object
+      required: [product_id, organization_id, name, sku, created_at]
+      properties:
+        product_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        name: { type: string }
+        sku: { type: string }
+        description: { type: [string, "null"] }
+        price:
+          type: [number, "null"]
+          minimum: 0
+        currency: { type: [string, "null"], minLength: 3, maxLength: 3 }
+        product_url: { type: [string, "null"], format: uri }
+        status: { type: string, enum: [active, archived], default: active }
+        allowed_claims:
+          type: array
+          items: { $ref: "#/components/schemas/AllowedClaim" }
+        media_assets:
+          type: array
+          items: { $ref: "#/components/schemas/ProductMediaAsset" }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    CreateProductRequest:
+      type: object
+      required: [organization_id, name, sku]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        name: { type: string }
+        sku: { type: string }
+        description: { type: string }
+        price: { type: number, minimum: 0 }
+        currency: { type: string, minLength: 3, maxLength: 3, default: USD }
+        product_url: { type: string, format: uri }
+        allowed_claims:
+          type: array
+          items: { $ref: "#/components/schemas/CreateAllowedClaim" }
+
+    UpdateProductRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        price: { type: number, minimum: 0 }
+        currency: { type: string, minLength: 3, maxLength: 3 }
+        product_url: { type: string, format: uri }
+        status: { type: string, enum: [active, archived] }
+
+    AllowedClaim:
+      type: object
+      required: [claim_id, claim_text, claim_type, status]
+      properties:
+        claim_id: { $ref: "#/components/schemas/ULID" }
+        claim_text: { type: string }
+        claim_type:
+          type: string
+          enum: [discount, inventory, feature, shipping, social_proof, guarantee, other]
+        status: { type: string, enum: [approved, expired, revoked] }
+        valid_from: { $ref: "#/components/schemas/ISODateTime" }
+        valid_until: { type: [string, "null"], format: date-time }
+
+    CreateAllowedClaim:
+      type: object
+      required: [claim_text, claim_type]
+      properties:
+        claim_text: { type: string }
+        claim_type:
+          type: string
+          enum: [discount, inventory, feature, shipping, social_proof, guarantee, other]
+        valid_until: { type: string, format: date-time }
+
+    ProductMediaAsset:
+      type: object
+      required: [url, role]
+      properties:
+        url: { type: string, format: uri }
+        role: { type: string, enum: [primary, gallery, reference, packaging] }
+
+    Campaign:
+      type: object
+      required: [campaign_id, organization_id, name, status]
+      properties:
+        campaign_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        name: { type: string }
+        status: { type: string, enum: [draft, active, ended, archived] }
+        offer_summary: { type: [string, "null"] }
+        product_ids:
+          type: array
+          items: { $ref: "#/components/schemas/ULID" }
+
+    CreateCampaignRequest:
+      type: object
+      required: [organization_id, name]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        name: { type: string }
+        offer_summary: { type: string }
+        product_ids:
+          type: array
+          items: { $ref: "#/components/schemas/ULID" }
+        valid_from: { type: string, format: date-time }
+        valid_until: { type: string, format: date-time }
+
+    CreateCatalogSnapshotRequest:
+      type: object
+      required: [organization_id, campaign_id]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        campaign_id: { $ref: "#/components/schemas/ULID" }
+        session_id: { $ref: "#/components/schemas/ULID" }
+
+    CatalogSnapshot:
+      type: object
+      required: [catalog_snapshot_id, organization_id, product_count, claim_count, manifest_asset_id, created_at]
+      properties:
+        catalog_snapshot_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        campaign_id: { $ref: "#/components/schemas/ULID" }
+        product_count: { type: integer }
+        offer_count: { type: integer }
+        claim_count: { type: integer }
+        manifest_asset_id: { $ref: "#/components/schemas/ULID" }
+        b2_object_key: { type: string }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    ImportJob:
+      type: object
+      required: [import_job_id, status]
+      properties:
+        import_job_id: { $ref: "#/components/schemas/ULID" }
+        status: { type: string, enum: [queued, running, completed, failed] }
+
+    SourceType:
+      type: string
+      enum: [browser_camera, screen_share, upload_prerecorded, prerecorded_live, obs_rtmp, external_adapter]
+
+    SessionStatus:
+      type: string
+      enum: [created, opening, live, closing, closed, error, reconciled]
+
+    Session:
+      type: object
+      required: [session_id, organization_id, source_type, status, created_at]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        host_user_id: { type: [string, "null"] }
+        title: { type: [string, "null"] }
+        source_type: { $ref: "#/components/schemas/SourceType" }
+        status: { $ref: "#/components/schemas/SessionStatus" }
+        catalog_snapshot_id: { type: [string, "null"] }
+        campaign_id: { type: [string, "null"] }
+        full_session_recording_enabled: { type: boolean }
+        live_transform_enabled: { type: boolean }
+        live_transform_audience_visible: { type: boolean }
+        started_at: { type: [string, "null"], format: date-time }
+        ended_at: { type: [string, "null"], format: date-time }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    CreateSessionRequest:
+      type: object
+      required: [organization_id, source_type]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        title: { type: string }
+        source_type: { $ref: "#/components/schemas/SourceType" }
+        campaign_id: { $ref: "#/components/schemas/ULID" }
+        mode: { type: string, enum: [commerce_grounded, demo_generic], default: commerce_grounded }
+
+    SessionPreflightRequest:
+      type: object
+      required: [organization_id, source_type, recording_policy, automation_policy]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        source_type: { $ref: "#/components/schemas/SourceType" }
+        campaign_id: { $ref: "#/components/schemas/ULID" }
+        catalog_snapshot_id: { $ref: "#/components/schemas/ULID" }
+        recording_policy:
+          type: object
+          required: [mode]
+          properties:
+            mode: { type: string, enum: [moment_only, full_session] }
+            capture_live_transformed_when_relevant: { type: boolean, default: true }
+        automation_policy:
+          type: object
+          properties:
+            high_confidence_auto_capture: { type: boolean, default: true }
+            high_confidence_auto_enhance: { type: boolean, default: true }
+            medium_confidence_capture_review: { type: boolean, default: true }
+
+    SessionPreflightResult:
+      type: object
+      required: [allowed, checks]
+      properties:
+        allowed: { type: boolean }
+        checks:
+          type: array
+          items:
+            type: object
+            required: [key, status]
+            properties:
+              key: { type: string }
+              status: { type: string, enum: [pass, fail, warning] }
+              message: { type: string }
+        catalog_snapshot_id: { type: [string, "null"] }
+
+    StartSessionRequest:
+      type: object
+      properties:
+        source_ref: { type: string }
+        start_mode: { type: string, enum: [live, prerecorded_live], default: prerecorded_live }
+
+    TimelineEventType:
+      type: string
+      enum: [signal, candidate, capture, generation, qa, review, publish]
+
+    SessionTimeline:
+      type: object
+      required: [session_id, events]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        events:
+          type: array
+          items:
+            type: object
+            required: [type, start_ms]
+            properties:
+              type: { $ref: "#/components/schemas/TimelineEventType" }
+              start_ms: { type: integer }
+              end_ms: { type: [integer, "null"] }
+              label: { type: string }
+              ref_id: { type: string }
+              status: { type: string }
+
+    MomentState:
+      type: string
+      enum: [candidate, capture_authorized, capturing, raw_uploaded, enhancement_pending, enhancing, qa_pending, review_pending, approved, canonical, published, rejected, failed, archived, deleted]
+
+    MomentType:
+      type: string
+      enum: [product_reveal, offer_mention, try_on, feature_demo, host_reaction, before_after, limited_stock_cta, unknown]
+
+    Moment:
+      type: object
+      required: [moment_id, organization_id, session_id, state, start_ms, end_ms, moment_type, created_at]
+      properties:
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        session_id: { $ref: "#/components/schemas/ULID" }
+        state: { $ref: "#/components/schemas/MomentState" }
+        start_ms: { type: integer }
+        end_ms: { type: integer }
+        raw_capture_start_ms: { type: [integer, "null"] }
+        raw_capture_end_ms: { type: [integer, "null"] }
+        moment_type: { $ref: "#/components/schemas/MomentType" }
+        score: { type: [number, "null"], minimum: 0, maximum: 1 }
+        selection_reason: { type: [string, "null"] }
+        product_id: { type: [string, "null"] }
+        campaign_id: { type: [string, "null"] }
+        canonical_asset_id: { type: [string, "null"] }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    MomentDetail:
+      allOf:
+        - $ref: "#/components/schemas/Moment"
+        - type: object
+          properties:
+            assets:
+              type: array
+              items: { $ref: "#/components/schemas/Asset" }
+            generation_runs:
+              type: array
+              items: { $ref: "#/components/schemas/GenerationRun" }
+            evidence:
+              type: array
+              items: { $ref: "#/components/schemas/MomentEvidence" }
+            qa_checks:
+              type: array
+              items: { $ref: "#/components/schemas/QaCheck" }
+
+    MomentEvidence:
+      type: object
+      required: [evidence_id, evidence_type, summary]
+      properties:
+        evidence_id: { $ref: "#/components/schemas/ULID" }
+        evidence_type: { type: string, enum: [signal, transcript_excerpt, frame_ref, agent_output, policy_decision, budget_decision] }
+        summary: { type: string }
+        ref_id: { type: string }
+        confidence: { type: [number, "null"], minimum: 0, maximum: 1 }
+
+    AssetRole:
+      type: string
+      enum: [raw_source, raw_mezzanine, live_transformed, enhanced_master, publish_variant, thumbnail, captions, transcript, evidence, manifest, catalog_snapshot]
+
+    AssetVerificationStatus:
+      type: string
+      enum: [unverified, verified, failed]
+
+    Asset:
+      type: object
+      required: [asset_id, organization_id, asset_role, bucket, object_key, verification_status, created_at]
+      properties:
+        asset_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        session_id: { type: [string, "null"] }
+        moment_id: { type: [string, "null"] }
+        asset_role: { $ref: "#/components/schemas/AssetRole" }
+        bucket: { type: string }
+        object_key: { type: string }
+        mime_type: { type: [string, "null"] }
+        bytes: { type: [integer, "null"] }
+        sha256: { type: [string, "null"] }
+        width: { type: [integer, "null"] }
+        height: { type: [integer, "null"] }
+        duration_ms: { type: [integer, "null"] }
+        verification_status: { $ref: "#/components/schemas/AssetVerificationStatus" }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    SignedUrlResponse:
+      type: object
+      required: [url, expires_at]
+      properties:
+        url: { type: string, format: uri }
+        expires_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    DeleteAssetRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string }
+        delete_scope: { type: string, enum: [asset_only, moment_assets, publish_package], default: asset_only }
+
+    DeletionResult:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, enum: [soft_deleted, scheduled, denied] }
+        deletion_job_id: { type: [string, "null"] }
+
+    GenerationRunStatus:
+      type: string
+      enum: [queued, running, provider_pending, completed, failed, cancelled, reconciled]
+
+    GenerationRun:
+      type: object
+      required: [generation_run_id, organization_id, run_type, status, created_at]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        session_id: { type: [string, "null"] }
+        moment_id: { type: [string, "null"] }
+        parent_run_id: { type: [string, "null"] }
+        run_type: { type: string, enum: [enhancement, restyle, thumbnail, captions, publish_variant, qa_auxiliary] }
+        status: { $ref: "#/components/schemas/GenerationRunStatus" }
+        provider: { type: [string, "null"] }
+        model: { type: [string, "null"] }
+        template_id: { type: [string, "null"] }
+        template_version: { type: [string, "null"] }
+        input_asset_id: { type: [string, "null"] }
+        output_asset_id: { type: [string, "null"] }
+        manifest_asset_id: { type: [string, "null"] }
+        estimated_cost_usd: { type: [number, "null"] }
+        actual_cost_usd: { type: [number, "null"] }
+        error_code: { type: [string, "null"] }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    RerenderMomentRequest:
+      type: object
+      required: [template_id, reason]
+      properties:
+        template_id: { type: string }
+        template_version: { type: string }
+        reason: { type: string }
+        edits:
+          type: object
+          properties:
+            final_trim_start_ms: { type: integer }
+            final_trim_end_ms: { type: integer }
+            hook_title: { type: string }
+            caption_text: { type: string }
+            product_card_enabled: { type: boolean }
+            ai_restyle_enabled: { type: boolean }
+
+    QaStatus:
+      type: string
+      enum: [not_started, running, passed, failed, review_required, remediated, terminal]
+
+    QaCheck:
+      type: object
+      required: [qa_check_id, status, check_name]
+      properties:
+        qa_check_id: { $ref: "#/components/schemas/ULID" }
+        check_name: { type: string }
+        status: { $ref: "#/components/schemas/QaStatus" }
+        failure_class: { type: [string, "null"], enum: [retryable, remediable, review_required, terminal, null] }
+        reason: { type: [string, "null"] }
+
+    ReviewQueueItem:
+      type: object
+      required: [moment, status_summary]
+      properties:
+        moment: { $ref: "#/components/schemas/Moment" }
+        status_summary:
+          type: object
+          properties:
+            qa_status: { $ref: "#/components/schemas/QaStatus" }
+            product_fact_status: { type: string, enum: [grounded, missing, review_required] }
+            publish_ready: { type: boolean }
+            explanation: { type: string }
+        preview_asset: { $ref: "#/components/schemas/Asset" }
+
+    ApproveMomentRequest:
+      type: object
+      required: [asset_id, decision]
+      properties:
+        asset_id: { $ref: "#/components/schemas/ULID" }
+        decision: { type: string, enum: [approve] }
+        promote_canonical: { type: boolean, default: true }
+        reason: { type: string }
+
+    RejectMomentRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string }
+        rejection_type: { type: string, enum: [bad_moment, bad_generation, wrong_product, unsafe, duplicate, other] }
+
+    MomentCompare:
+      type: object
+      required: [moment_id]
+      properties:
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        raw_asset: { $ref: "#/components/schemas/Asset" }
+        enhanced_asset: { $ref: "#/components/schemas/Asset" }
+        published_asset: { $ref: "#/components/schemas/Asset" }
+        signed_urls:
+          type: object
+          additionalProperties:
+            type: string
+            format: uri
+
+    ProvenanceGraph:
+      type: object
+      required: [moment_id, nodes, edges]
+      properties:
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        nodes:
+          type: array
+          items:
+            type: object
+            required: [id, type, label]
+            properties:
+              id: { type: string }
+              type: { type: string, enum: [asset, generation_run, publish_package, catalog_snapshot, manifest] }
+              label: { type: string }
+              status: { type: string }
+              ref_id: { type: string }
+        edges:
+          type: array
+          items:
+            type: object
+            required: [from, to, relationship]
+            properties:
+              from: { type: string }
+              to: { type: string }
+              relationship: { type: string, enum: [derived_from, generated_by, packaged_as, verified_by, grounded_in] }
+
+    CreatePublishPackageRequest:
+      type: object
+      required: [organization_id, moment_id, canonical_asset_id]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        canonical_asset_id: { $ref: "#/components/schemas/ULID" }
+        destinations:
+          type: array
+          items: { type: string, enum: [internal_library, download_zip, signed_share_link, shopify_media, youtube_shorts, tiktok_draft, instagram_reels] }
+        title: { type: string }
+        description: { type: string }
+
+    PublishPackage:
+      type: object
+      required: [publish_package_id, organization_id, moment_id, status]
+      properties:
+        publish_package_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        status: { type: string, enum: [draft, ready, review_pending, approved, published, failed, revoked, deleted] }
+        canonical_asset_id: { $ref: "#/components/schemas/ULID" }
+        thumbnail_asset_id: { type: [string, "null"] }
+        captions_asset_id: { type: [string, "null"] }
+        provenance_manifest_asset_id: { type: [string, "null"] }
+        title: { type: [string, "null"] }
+        description: { type: [string, "null"] }
+        product_links:
+          type: array
+          items: { type: string, format: uri }
+
+    CreateSharePageRequest:
+      type: object
+      required: [visibility]
+      properties:
+        visibility: { type: string, enum: [private, unlisted_public] }
+        expires_at: { type: [string, "null"], format: date-time }
+        allow_download: { type: boolean, default: false }
+        show_provenance_badge: { type: boolean, default: true }
+
+    SharePage:
+      type: object
+      required: [share_page_id, publish_package_id, share_slug, visibility, status]
+      properties:
+        share_page_id: { $ref: "#/components/schemas/ULID" }
+        publish_package_id: { $ref: "#/components/schemas/ULID" }
+        share_slug: { type: string }
+        visibility: { type: string, enum: [private, unlisted_public] }
+        status: { type: string, enum: [active, revoked, expired] }
+        url: { type: string, format: uri }
+
+    PublicSharePageResponse:
+      type: object
+      required: [share_page, publish_package]
+      properties:
+        share_page: { $ref: "#/components/schemas/SharePage" }
+        publish_package: { $ref: "#/components/schemas/PublishPackage" }
+        signed_video_url: { type: [string, "null"], format: uri }
+        product_links:
+          type: array
+          items: { type: string, format: uri }
+
+    AgentToolEnvelope:
+      type: object
+      required: [tool_call_id, agent_id, organization_id, idempotency_key, trace_id, payload]
+      properties:
+        tool_call_id: { $ref: "#/components/schemas/ULID" }
+        agent_id: { type: string }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        session_id: { type: [string, "null"] }
+        moment_id: { type: [string, "null"] }
+        requested_by_user_id: { type: [string, "null"] }
+        idempotency_key: { type: string }
+        trace_id: { type: string }
+        payload: { type: object, additionalProperties: true }
+
+    AgentProposeMomentCandidateRequest:
+      allOf:
+        - $ref: "#/components/schemas/AgentToolEnvelope"
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [session_id, start_ms, end_ms, confidence, moment_type, reason, evidence_refs]
+              properties:
+                session_id: { $ref: "#/components/schemas/ULID" }
+                start_ms: { type: integer }
+                end_ms: { type: integer }
+                confidence: { type: number, minimum: 0, maximum: 1 }
+                moment_type: { $ref: "#/components/schemas/MomentType" }
+                reason: { type: string }
+                evidence_refs:
+                  type: array
+                  items: { type: string }
+
+    AgentSuggestTemplateRequest:
+      allOf:
+        - $ref: "#/components/schemas/AgentToolEnvelope"
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [moment_id, template_id, reason]
+              properties:
+                moment_id: { $ref: "#/components/schemas/ULID" }
+                template_id: { type: string }
+                template_version: { type: string }
+                ai_restyle_enabled: { type: boolean }
+                reason: { type: string }
+
+    AgentValidateProductMatchRequest:
+      allOf:
+        - $ref: "#/components/schemas/AgentToolEnvelope"
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [moment_id, matches]
+              properties:
+                moment_id: { $ref: "#/components/schemas/ULID" }
+                matches:
+                  type: array
+                  items:
+                    type: object
+                    required: [product_id, confidence]
+                    properties:
+                      product_id: { $ref: "#/components/schemas/ULID" }
+                      sku: { type: string }
+                      confidence: { type: number, minimum: 0, maximum: 1 }
+                      evidence_refs:
+                        type: array
+                        items: { type: string }
+                needs_human_review: { type: boolean }
+
+    AgentExplainQaResultRequest:
+      allOf:
+        - $ref: "#/components/schemas/AgentToolEnvelope"
+        - type: object
+          properties:
+            payload:
+              type: object
+              required: [moment_id, qa_check_id, explanation]
+              properties:
+                moment_id: { $ref: "#/components/schemas/ULID" }
+                qa_check_id: { $ref: "#/components/schemas/ULID" }
+                explanation: { type: string }
+
+    AgentToolResult:
+      type: object
+      required: [accepted, status]
+      properties:
+        accepted: { type: boolean }
+        status: { type: string, enum: [recorded, denied, duplicate, invalid_state, budget_blocked] }
+        resource_id: { type: [string, "null"] }
+        message: { type: string }
+
+    CaptureCompletedRequest:
+      type: object
+      required: [organization_id, session_id, moment_id, raw_asset, trace_id]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        session_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        raw_asset: { $ref: "#/components/schemas/AssetWriteDescriptor" }
+        mezzanine_asset: { $ref: "#/components/schemas/AssetWriteDescriptor" }
+        trace_id: { type: string }
+
+    AssetWriteDescriptor:
+      type: object
+      required: [asset_role, bucket, object_key, bytes, sha256]
+      properties:
+        asset_role: { $ref: "#/components/schemas/AssetRole" }
+        bucket: { type: string }
+        object_key: { type: string }
+        mime_type: { type: string }
+        bytes: { type: integer }
+        sha256: { type: string }
+        width: { type: integer }
+        height: { type: integer }
+        duration_ms: { type: integer }
+
+    GenerationStartedRequest:
+      type: object
+      required: [generation_run_id, organization_id, trace_id]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        provider: { type: string }
+        model: { type: string }
+        trace_id: { type: string }
+
+    GenerationCompletedRequest:
+      type: object
+      required: [generation_run_id, organization_id, output_asset, manifest_asset, trace_id]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        output_asset: { $ref: "#/components/schemas/AssetWriteDescriptor" }
+        manifest_asset: { $ref: "#/components/schemas/AssetWriteDescriptor" }
+        provider: { type: string }
+        model: { type: string }
+        provider_job_ref: { type: string }
+        actual_cost_usd: { type: number }
+        trace_id: { type: string }
+
+    GenerationFailedRequest:
+      type: object
+      required: [generation_run_id, organization_id, failure_class, error_code, message, trace_id]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        failure_class: { type: string, enum: [retryable, remediable, review_required, terminal] }
+        error_code: { type: string }
+        message: { type: string }
+        trace_id: { type: string }
+
+    QaCompletedRequest:
+      type: object
+      required: [organization_id, moment_id, status, checks, trace_id]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        status: { $ref: "#/components/schemas/QaStatus" }
+        checks:
+          type: array
+          items: { $ref: "#/components/schemas/QaCheck" }
+        trace_id: { type: string }
+
+    PublishCompletedRequest:
+      type: object
+      required: [organization_id, publish_package_id, status, trace_id]
+      properties:
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        publish_package_id: { $ref: "#/components/schemas/ULID" }
+        status: { type: string, enum: [ready, published, failed] }
+        assets:
+          type: array
+          items: { $ref: "#/components/schemas/AssetWriteDescriptor" }
+        trace_id: { type: string }
+
+    WorkerCallbackResult:
+      type: object
+      required: [accepted, status]
+      properties:
+        accepted: { type: boolean }
+        status: { type: string }
+        message: { type: string }
+
+    DeadLetterEvent:
+      type: object
+      required: [dead_letter_event_id, organization_id, event_type, status, created_at]
+      properties:
+        dead_letter_event_id: { $ref: "#/components/schemas/ULID" }
+        organization_id: { $ref: "#/components/schemas/ULID" }
+        event_type: { type: string }
+        status: { type: string, enum: [open, retried, terminal, skipped] }
+        error_message: { type: string }
+        trace_id: { type: string }
+        created_at: { $ref: "#/components/schemas/ISODateTime" }
+
+    AdminActionResult:
+      type: object
+      required: [accepted, action_id]
+      properties:
+        accepted: { type: boolean }
+        action_id: { $ref: "#/components/schemas/ULID" }
+        message: { type: string }

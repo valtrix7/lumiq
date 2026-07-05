@@ -1,0 +1,22 @@
+{
+  "name": "lumiq",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "contracts:validate": "echo TODO: validate OpenAPI and AsyncAPI contracts",
+    "schemas:validate": "echo TODO: validate JSON schemas",
+    "seed:demo": "echo TODO: seed demo data",
+    "test:e2e:golden": "echo TODO: run golden path E2E test",
+    "dev:stack": "docker compose up --build"
+  },
+  "devDependencies": {
+    "turbo": "latest",
+    "typescript": "latest"
+  }
+}

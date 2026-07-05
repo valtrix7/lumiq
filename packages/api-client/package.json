@@ -1,0 +1,1 @@
+{"name":"@lumiq/api-client","private":true,"type":"module","main":"src/index.ts","scripts":{"build":"tsc --noEmit","lint":"echo TODO api-client lint","typecheck":"tsc --noEmit","test":"echo TODO api-client tests"},"devDependencies":{"typescript":"latest"}}

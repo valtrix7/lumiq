@@ -1,0 +1,1 @@
+{"name":"@lumiq/api","private":true,"type":"module","scripts":{"dev":"tsx src/index.ts","build":"tsc --noEmit","lint":"echo TODO api lint","typecheck":"tsc --noEmit","test":"echo TODO api tests"},"dependencies":{"tsx":"latest"},"devDependencies":{"typescript":"latest"}}

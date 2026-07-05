@@ -1,0 +1,230 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "llm_run_id",
+    "organization_id",
+    "provider",
+    "model",
+    "task_type",
+    "status",
+    "schema_version",
+    "input_hash",
+    "output_hash",
+    "trace_id",
+    "created_at"
+  ],
+  "properties": {
+    "llm_run_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "agent_id": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AgentId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "agent_tool_call_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "provider": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ProviderName"
+    },
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160
+    },
+    "task_type": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/LLMTaskType"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "cancelled"
+      ]
+    },
+    "schema_version": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SchemaVersion"
+    },
+    "input_hash": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+    },
+    "output_hash": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "prompt_template_hash": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "structured_output_schema_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uri"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "estimated_cost_usd": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CostUSD"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "actual_cost_usd": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CostUSD"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "latency_ms": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input_tokens": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "output_tokens": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error_code": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 120
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "trace_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/TraceId"
+    },
+    "correlation_id": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CorrelationId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "description": "LLM call audit/usage contract. Raw prompts and raw outputs are intentionally not schema fields.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/llm-run.schema.json",
+  "title": "Lumiq LLM Run",
+  "$comment": "REQ-LLM-001, REQ-LLM-003, REQ-LLM-005. Store hashes, costs, status, and traceability; do not store raw prompts or raw outputs in normal records.",
+  "examples": [
+    {
+      "llm_run_id": "01J0000000000000000000000P",
+      "organization_id": "01J00000000000000000000001",
+      "session_id": "01J00000000000000000000003",
+      "moment_id": "01J00000000000000000000004",
+      "agent_id": "supervisor-agent-v1",
+      "agent_tool_call_id": "01J0000000000000000000000N",
+      "provider": "openai",
+      "model": "configured-frontier-reasoning",
+      "task_type": "supervisor_decision",
+      "status": "succeeded",
+      "schema_version": "1.0.0",
+      "input_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "output_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "prompt_template_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "structured_output_schema_id": "https://schemas.lumiq.app/agent-tool-call.schema.json",
+      "estimated_cost_usd": 0.02,
+      "actual_cost_usd": 0.018,
+      "latency_ms": 1200,
+      "input_tokens": 900,
+      "output_tokens": 160,
+      "error_code": null,
+      "trace_id": "trace_demo_01",
+      "correlation_id": "corr_demo_01",
+      "metadata_json": {},
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "completed_at": "2026-06-26T09:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,642 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/common.schema.json",
+  "title": "Lumiq Common JSON Schema Definitions",
+  "description": "Shared primitives, strict IDs, checksums, timestamps, tenant-scoped B2 keys, safe metadata, common enums, and reusable small objects for Lumiq contracts.",
+  "$comment": "REQ-EVENT-001, REQ-AUTH-005, REQ-ASSET-002, REQ-ASSET-004, REQ-LLM-005. Lumiq uses strict ULID-style IDs, not demo labels, for canonical identifiers.",
+  "$defs": {
+    "ULID": {
+      "type": "string",
+      "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+      "minLength": 26,
+      "maxLength": 26,
+      "description": "Strict uppercase Crockford Base32 ULID. Demo labels such as seeded_* are intentionally rejected.",
+      "examples": [
+        "01J00000000000000000000001"
+      ]
+    },
+    "NullableULID": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ULID"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "ISODateTime": {
+      "type": "string",
+      "format": "date-time",
+      "examples": [
+        "2026-06-26T09:00:00.000Z"
+      ]
+    },
+    "ISODate": {
+      "type": "string",
+      "format": "date"
+    },
+    "SchemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": [
+        "1.0.0"
+      ]
+    },
+    "Semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:[-+][0-9A-Za-z.-]+)?$",
+      "examples": [
+        "1.0.0"
+      ]
+    },
+    "Slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "NonEmptyString": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "ShortText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 280
+    },
+    "LongText": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 5000
+    },
+    "TraceId": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9._:/=-]+$",
+      "examples": [
+        "trace_demo_01"
+      ]
+    },
+    "CorrelationId": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 160,
+      "pattern": "^[A-Za-z0-9._:/=-]+$",
+      "examples": [
+        "corr_demo_01"
+      ]
+    },
+    "IdempotencyKey": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 240,
+      "pattern": "^[A-Za-z0-9._:/=-]+$",
+      "examples": [
+        "generation:01J0000000000000000000000B"
+      ]
+    },
+    "SHA256Hex": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "examples": [
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    "SHA256Digest": {
+      "type": "string",
+      "pattern": "^(sha256:)?[a-f0-9]{64}$",
+      "examples": [
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      ]
+    },
+    "CanonicalHash": {
+      "type": "string",
+      "pattern": "^(sha256:)?[a-f0-9]{64}$"
+    },
+    "B2BucketName": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9.-]{2,62}$",
+      "minLength": 3,
+      "maxLength": 63,
+      "examples": [
+        "moment-vault-dev-derived"
+      ]
+    },
+    "B2ObjectKey": {
+      "type": "string",
+      "pattern": "^tenants/[0-9A-HJKMNP-TV-Z]{26}/[A-Za-z0-9._~!$&'()*+,;=:@%/-]+$",
+      "description": "Tenant-scoped B2 object key. Application code must additionally verify that the embedded tenant ULID equals organization_id.",
+      "examples": [
+        "tenants/01J00000000000000000000001/sessions/01J00000000000000000000003/moments/01J00000000000000000000004/raw/source/01J00000000000000000000005.webm"
+      ]
+    },
+    "MimeType": {
+      "type": "string",
+      "pattern": "^[a-z0-9.+-]+/[a-z0-9.+-]+$",
+      "examples": [
+        "video/mp4",
+        "application/json"
+      ]
+    },
+    "URI": {
+      "type": "string",
+      "format": "uri"
+    },
+    "CurrencyCode": {
+      "type": "string",
+      "pattern": "^[A-Z]{3}$",
+      "examples": [
+        "USD"
+      ]
+    },
+    "MoneyAmount": {
+      "type": "number",
+      "minimum": 0,
+      "multipleOf": 0.01
+    },
+    "CostUSD": {
+      "type": "number",
+      "minimum": 0
+    },
+    "Score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "Milliseconds": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "PositiveInteger": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "JSONValue": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/JSONValue"
+          }
+        }
+      ]
+    },
+    "SafeMetadata": {
+      "type": "object",
+      "description": "Provider/app extension object. Top-level dangerous keys are rejected; secrets, raw prompts, SQL, shell commands, and arbitrary scripts are forbidden by policy.",
+      "propertyNames": {
+        "not": {
+          "pattern": "(secret|Secret|SECRET|token|Token|TOKEN|provider[_-]?key|Provider[_-]?Key|api[_-]?key|API[_-]?KEY|password|Password|PASSWORD|credential|Credential|CREDENTIAL|sql|SQL|script|Script|SCRIPT|command|Command|COMMAND|execute|Execute|EXECUTE)"
+        }
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/JSONValue"
+      },
+      "maxProperties": 100
+    },
+    "EvidenceRef": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240,
+      "pattern": "^[A-Za-z0-9._:/=-]+$"
+    },
+    "EvidenceRefs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/EvidenceRef"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "StringArray": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "ULIDArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ULID"
+      },
+      "uniqueItems": true
+    },
+    "SourceType": {
+      "type": "string",
+      "enum": [
+        "browser_camera",
+        "screen_share",
+        "upload_prerecorded",
+        "prerecorded_live",
+        "obs_rtmp",
+        "external_adapter"
+      ]
+    },
+    "AssetRole": {
+      "type": "string",
+      "enum": [
+        "raw_source",
+        "raw_mezzanine",
+        "live_transformed",
+        "enhanced_master",
+        "publish_variant",
+        "thumbnail",
+        "captions",
+        "transcript",
+        "evidence",
+        "manifest",
+        "catalog_snapshot",
+        "full_session_recording",
+        "waveform",
+        "proxy_preview"
+      ]
+    },
+    "AssetVerificationStatus": {
+      "type": "string",
+      "enum": [
+        "unverified",
+        "verified",
+        "failed"
+      ]
+    },
+    "RetentionClass": {
+      "type": "string",
+      "enum": [
+        "tmp",
+        "raw_active",
+        "mezzanine",
+        "derived",
+        "published",
+        "provenance_locked",
+        "audit",
+        "debug"
+      ]
+    },
+    "MomentState": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "capture_authorized",
+        "capturing",
+        "raw_uploaded",
+        "enhancement_pending",
+        "enhancing",
+        "qa_pending",
+        "review_pending",
+        "approved",
+        "canonical",
+        "published",
+        "rejected",
+        "failed",
+        "archived",
+        "deleted"
+      ]
+    },
+    "MomentType": {
+      "type": "string",
+      "enum": [
+        "product_reveal",
+        "offer_mention",
+        "try_on",
+        "feature_demo",
+        "host_reaction",
+        "before_after",
+        "limited_stock_cta",
+        "unknown"
+      ]
+    },
+    "GenerationRunType": {
+      "type": "string",
+      "enum": [
+        "capture",
+        "enhancement",
+        "restyle",
+        "thumbnail",
+        "captions",
+        "publish_variant",
+        "qa_auxiliary",
+        "manifest"
+      ]
+    },
+    "GenerationRunStatus": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "provider_pending",
+        "completed",
+        "failed",
+        "cancelled",
+        "reconciled"
+      ]
+    },
+    "QaStage": {
+      "type": "string",
+      "enum": [
+        "pre_enhancement",
+        "post_enhancement",
+        "pre_publish",
+        "admin_reconciliation"
+      ]
+    },
+    "QaStatus": {
+      "type": "string",
+      "enum": [
+        "not_started",
+        "running",
+        "passed",
+        "failed",
+        "review_required",
+        "remediated",
+        "terminal"
+      ]
+    },
+    "QaFailureClass": {
+      "type": "string",
+      "enum": [
+        "retryable",
+        "remediable",
+        "review_required",
+        "terminal"
+      ]
+    },
+    "PublishPackageStatus": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "ready",
+        "review_pending",
+        "approved",
+        "published",
+        "failed",
+        "revoked",
+        "deleted"
+      ]
+    },
+    "EventProducer": {
+      "type": "string",
+      "enum": [
+        "core-api",
+        "mastra-agent-service",
+        "signal-extraction-worker",
+        "capture-worker",
+        "genblaze-worker",
+        "qa-worker",
+        "publish-worker",
+        "search-indexing-worker",
+        "audit-reconciliation-worker",
+        "admin-recovery",
+        "system"
+      ]
+    },
+    "AgentId": {
+      "type": "string",
+      "enum": [
+        "supervisor-agent-v1",
+        "signal-moment-agent-v1",
+        "product-matcher-agent-v1",
+        "clip-boundary-agent-v1",
+        "enhancement-planner-agent-v1",
+        "caption-copy-agent-v1",
+        "qa-agent-v1",
+        "provenance-explainer-agent-v1"
+      ]
+    },
+    "LLMTaskType": {
+      "type": "string",
+      "enum": [
+        "supervisor_decision",
+        "product_match",
+        "moment_validation",
+        "caption_generation",
+        "qa_review",
+        "provenance_explanation",
+        "embedding"
+      ]
+    },
+    "ProviderName": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{1,63}$",
+      "examples": [
+        "openai",
+        "genblaze",
+        "gmicloud"
+      ]
+    },
+    "TimelineRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start_ms",
+        "end_ms",
+        "source"
+      ],
+      "properties": {
+        "start_ms": {
+          "$ref": "#/$defs/Milliseconds"
+        },
+        "end_ms": {
+          "$ref": "#/$defs/Milliseconds"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "candidate",
+            "raw_capture",
+            "agent_boundary",
+            "reviewer_edit",
+            "policy_default",
+            "provider_output"
+          ]
+        },
+        "confidence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Score"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShortText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "properties": {
+            "end_ms": {
+              "minimum": 0
+            }
+          }
+        }
+      ]
+    },
+    "B2ObjectRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bucket",
+        "object_key"
+      ],
+      "properties": {
+        "bucket": {
+          "$ref": "#/$defs/B2BucketName"
+        },
+        "object_key": {
+          "$ref": "#/$defs/B2ObjectKey"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SHA256Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bytes": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "AssetRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asset_id",
+        "organization_id",
+        "asset_role"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/ULID"
+        },
+        "organization_id": {
+          "$ref": "#/$defs/ULID"
+        },
+        "session_id": {
+          "$ref": "#/$defs/NullableULID"
+        },
+        "moment_id": {
+          "$ref": "#/$defs/NullableULID"
+        },
+        "generation_run_id": {
+          "$ref": "#/$defs/NullableULID"
+        },
+        "asset_role": {
+          "$ref": "#/$defs/AssetRole"
+        },
+        "bucket": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/B2BucketName"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "object_key": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/B2ObjectKey"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SHA256Digest"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mime_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MimeType"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "verification_status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetVerificationStatus"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "HashRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "algorithm",
+        "value"
+      ],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": [
+            "sha256"
+          ]
+        },
+        "value": {
+          "$ref": "#/$defs/SHA256Hex"
+        }
+      }
+    }
+  }
+}

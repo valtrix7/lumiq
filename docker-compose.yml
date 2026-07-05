@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: lumiq-postgres
+    environment:
+      POSTGRES_USER: lumiq
+      POSTGRES_PASSWORD: lumiq
+      POSTGRES_DB: lumiq
+    ports:
+      - "5432:5432"
+    volumes:
+      - lumiq-postgres-data:/var/lib/postgresql/data
+
+  nats:
+    image: nats:2.10
+    container_name: lumiq-nats
+    command: ["-js", "-m", "8222"]
+    ports:
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - lumiq-nats-data:/data
+
+  minio:
+    image: minio/minio:latest
+    container_name: lumiq-minio-b2-mock
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: lumiq
+      MINIO_ROOT_PASSWORD: lumiq-password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - lumiq-minio-data:/data
+
+volumes:
+  lumiq-postgres-data:
+  lumiq-nats-data:
+  lumiq-minio-data:

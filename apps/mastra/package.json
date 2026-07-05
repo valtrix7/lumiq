@@ -1,0 +1,1 @@
+{"name":"@lumiq/mastra","private":true,"type":"module","scripts":{"dev":"tsx src/index.ts","build":"tsc --noEmit","lint":"echo TODO mastra lint","typecheck":"tsc --noEmit","test":"echo TODO mastra tests"},"dependencies":{"tsx":"latest"},"devDependencies":{"typescript":"latest"}}

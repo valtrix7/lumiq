@@ -1,0 +1,145 @@
+:root {
+  color-scheme: dark;
+}
+
+@theme {
+  /* Lumiq — Primitive Colors */
+  --color-canvas-black: #000000;
+  --color-shell-black: #050506;
+  --color-panel-black: #0B0B0D;
+  --color-surface-one: #111114;
+  --color-surface-two: #18181D;
+  --color-surface-three: #212129;
+  --color-surface-four: #292934;
+
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B7B7C2;
+  --color-text-muted: #8C8C99;
+  --color-text-faint: #5E5E6B;
+
+  --color-royal-blue: #365CFF;
+  --color-royal-blue-hover: #4C6DFF;
+  --color-royal-blue-pressed: #2948D8;
+
+  --color-success: #7BE7A1;
+  --color-warning: #FFD27A;
+  --color-danger: #FF7A8A;
+  --color-processing: #8FA4FF;
+  --color-neutral: #B7B7C2;
+
+  --color-spectral-peach: #f6d1ac;
+  --color-spectral-pink: #f3b5d2;
+  --color-spectral-lavender: #c7b8f5;
+  --color-spectral-mint: #a7eadc;
+  --color-spectral-blue: #afcdf6;
+  --color-ember-red: #fc6767;
+  --color-ember-pink: #ec008c;
+
+  /* Semantic Colors for Tailwind utilities */
+  --color-background: #000000;
+  --color-foreground: #FFFFFF;
+  --color-card: #111114;
+  --color-card-foreground: #FFFFFF;
+  --color-popover: #292934;
+  --color-popover-foreground: #FFFFFF;
+  --color-primary: #365CFF;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #18181D;
+  --color-secondary-foreground: #FFFFFF;
+  --color-muted: #0B0B0D;
+  --color-muted-foreground: #8C8C99;
+  --color-accent: #212129;
+  --color-accent-foreground: #FFFFFF;
+  --color-destructive: #FF7A8A;
+  --color-destructive-foreground: #140407;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-input: rgba(255, 255, 255, 0.10);
+  --color-ring: #365CFF;
+
+  /* Sidebar semantics */
+  --color-sidebar: #050506;
+  --color-sidebar-foreground: #B7B7C2;
+  --color-sidebar-primary: #365CFF;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent: #111114;
+  --color-sidebar-accent-foreground: #FFFFFF;
+  --color-sidebar-border: rgba(255, 255, 255, 0.08);
+  --color-sidebar-ring: #365CFF;
+
+  /* Typography */
+  --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+
+  --text-micro: 10px;
+  --text-caption: 11px;
+  --text-label: 12px;
+  --text-body-sm: 13px;
+  --text-body: 14px;
+  --text-body-lg: 18px;
+  --text-heading-sm: 20px;
+  --text-heading-md: 24px;
+  --text-heading-lg: 32px;
+  --text-heading-xl: 40px;
+  --text-display: 52px;
+
+  --leading-micro: 1.25;
+  --leading-caption: 1.3;
+  --leading-label: 1.35;
+  --leading-body-sm: 1.46;
+  --leading-body: 1.5;
+  --leading-body-lg: 1.45;
+  --leading-heading-sm: 1.28;
+  --leading-heading-md: 1.22;
+  --leading-heading-lg: 1.16;
+  --leading-heading-xl: 1.12;
+  --leading-display: 1.08;
+
+  --tracking-micro: 0.02em;
+  --tracking-caption: 0px;
+  --tracking-label: -0.04px;
+  --tracking-body-sm: -0.08px;
+  --tracking-body: -0.14px;
+  --tracking-body-lg: -0.25px;
+  --tracking-heading-sm: -0.45px;
+  --tracking-heading-md: -0.7px;
+  --tracking-heading-lg: -1.2px;
+  --tracking-heading-xl: -1.9px;
+  --tracking-display: -3.1px;
+
+  /* Spacing */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-popover: 0 16px 40px rgba(0, 0, 0, 0.42);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.55);
+
+  /* Layout */
+  --spacing-sidebar: 248px;
+  --spacing-topbar: 64px;
+  --spacing-workspace-max: 1440px;
+  --spacing-content-max: 1280px;
+
+  /* Animation */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+}

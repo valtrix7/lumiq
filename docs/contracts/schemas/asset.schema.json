@@ -1,0 +1,213 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "asset_id",
+    "organization_id",
+    "asset_role",
+    "bucket",
+    "object_key",
+    "verification_status",
+    "retention_class",
+    "is_deleted",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "generation_run_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "asset_role": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AssetRole"
+    },
+    "bucket": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/B2BucketName"
+    },
+    "object_key": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/B2ObjectKey"
+    },
+    "mime_type": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MimeType"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "bytes": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "sha256": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "b2_sha1": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "width": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "height": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "duration_ms": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "frame_count": {
+      "anyOf": [
+        {
+          "type": "integer",
+          "minimum": 0
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "codec_video": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 80
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "codec_audio": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 80
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "retention_class": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/RetentionClass"
+    },
+    "verification_status": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/AssetVerificationStatus"
+    },
+    "is_deleted": {
+      "type": "boolean"
+    },
+    "deleted_at": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "updated_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    }
+  },
+  "description": "B2-backed asset row/API contract. Canonical B2 objects are immutable and tenant-scoped.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/asset.schema.json",
+  "title": "Lumiq Asset",
+  "$comment": "REQ-ASSET-001, REQ-ASSET-002, REQ-ASSET-003, REQ-ASSET-004. B2 object key tenant prefix must match organization_id in application policy.",
+  "examples": [
+    {
+      "asset_id": "01J00000000000000000000005",
+      "organization_id": "01J00000000000000000000001",
+      "session_id": "01J00000000000000000000003",
+      "moment_id": "01J00000000000000000000004",
+      "generation_run_id": null,
+      "asset_role": "raw_source",
+      "bucket": "moment-vault-dev-raw",
+      "object_key": "tenants/01J00000000000000000000001/sessions/01J00000000000000000000003/moments/01J00000000000000000000004/raw/source/01J00000000000000000000005.webm",
+      "mime_type": "video/webm",
+      "bytes": 5242880,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "b2_sha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "width": 1920,
+      "height": 1080,
+      "duration_ms": 34000,
+      "frame_count": null,
+      "codec_video": "vp9",
+      "codec_audio": "opus",
+      "retention_class": "raw_active",
+      "verification_status": "verified",
+      "is_deleted": false,
+      "deleted_at": null,
+      "metadata_json": {
+        "source_type": "prerecorded_live"
+      },
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "updated_at": "2026-06-26T09:00:00.000Z"
+    }
+  ]
+}

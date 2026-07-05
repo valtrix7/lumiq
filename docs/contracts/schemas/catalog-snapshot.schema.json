@@ -1,0 +1,814 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "manifest_type",
+    "catalog_snapshot_id",
+    "organization_id",
+    "product_count",
+    "offer_count",
+    "claim_count",
+    "snapshot_hash",
+    "created_at",
+    "products",
+    "offers",
+    "allowed_claims",
+    "product_assets"
+  ],
+  "properties": {
+    "schema_version": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SchemaVersion"
+    },
+    "manifest_type": {
+      "const": "catalog_snapshot"
+    },
+    "catalog_snapshot_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "campaign_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "manifest_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "b2_object_key": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/B2ObjectKey"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "product_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "offer_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "claim_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "snapshot_hash": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SHA256Digest"
+    },
+    "created_by_user_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "products": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_id",
+          "sku",
+          "name",
+          "source_adapter"
+        ],
+        "properties": {
+          "product_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 5000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "product_url": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/URI"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "price_amount": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MoneyAmount"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "price_currency": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CurrencyCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "inventory_status": {
+            "type": "string",
+            "enum": [
+              "in_stock",
+              "low_stock",
+              "out_of_stock",
+              "preorder",
+              "unknown"
+            ]
+          },
+          "source_adapter": {
+            "type": "string",
+            "enum": [
+              "manual_catalog",
+              "seeded_demo_catalog",
+              "csv_import",
+              "shopify",
+              "woocommerce",
+              "custom_api"
+            ]
+          },
+          "external_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 240
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "data_json": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+          }
+        }
+      }
+    },
+    "offers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "campaign_offer_id",
+          "offer_type",
+          "offer_text",
+          "is_active"
+        ],
+        "properties": {
+          "campaign_offer_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "product_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+          },
+          "offer_type": {
+            "type": "string",
+            "enum": [
+              "percent_discount",
+              "fixed_discount",
+              "sale_price",
+              "bundle",
+              "free_shipping",
+              "gift_with_purchase",
+              "other"
+            ]
+          },
+          "offer_text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 280
+          },
+          "price_amount": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MoneyAmount"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "price_currency": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CurrencyCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "discount_percent": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_active": {
+            "type": "boolean"
+          },
+          "data_json": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+          }
+        }
+      }
+    },
+    "allowed_claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "claim_text",
+          "claim_type",
+          "approval_status"
+        ],
+        "properties": {
+          "claim_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "product_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+          },
+          "campaign_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+          },
+          "claim_text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 280
+          },
+          "claim_type": {
+            "type": "string",
+            "enum": [
+              "discount",
+              "inventory",
+              "feature",
+              "shipping",
+              "social_proof",
+              "guarantee",
+              "identity",
+              "product_identity",
+              "generic_creative"
+            ]
+          },
+          "evidence_ref": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valid_from": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valid_until": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "approval_status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "pending",
+              "rejected",
+              "expired"
+            ]
+          },
+          "data_json": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+          }
+        }
+      }
+    },
+    "product_assets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "product_asset_id",
+          "product_id",
+          "role",
+          "sort_order"
+        ],
+        "properties": {
+          "product_asset_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "product_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+          },
+          "asset_id": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+          },
+          "external_url": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/URI"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "primary",
+              "gallery",
+              "reference",
+              "packaging",
+              "color_reference",
+              "lifestyle",
+              "demo_video"
+            ]
+          },
+          "sort_order": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    }
+  },
+  "description": "Frozen product, campaign, offer, claim, and asset facts for commerce-grounded generation.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/catalog-snapshot.schema.json",
+  "title": "Lumiq Catalog Snapshot",
+  "$comment": "REQ-CATALOG-003, REQ-CATALOG-004, REQ-CATALOG-005, CAT-GROUND-003. Generated product facts must come from this snapshot or approved refresh results.",
+  "$defs": {
+    "ProductSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_id",
+        "sku",
+        "name",
+        "source_adapter"
+      ],
+      "properties": {
+        "product_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "sku": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 5000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "product_url": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/URI"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price_amount": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MoneyAmount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price_currency": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CurrencyCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "inventory_status": {
+          "type": "string",
+          "enum": [
+            "in_stock",
+            "low_stock",
+            "out_of_stock",
+            "preorder",
+            "unknown"
+          ]
+        },
+        "source_adapter": {
+          "type": "string",
+          "enum": [
+            "manual_catalog",
+            "seeded_demo_catalog",
+            "csv_import",
+            "shopify",
+            "woocommerce",
+            "custom_api"
+          ]
+        },
+        "external_ref": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 240
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "data_json": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        }
+      }
+    },
+    "OfferSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "campaign_offer_id",
+        "offer_type",
+        "offer_text",
+        "is_active"
+      ],
+      "properties": {
+        "campaign_offer_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "product_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "offer_type": {
+          "type": "string",
+          "enum": [
+            "percent_discount",
+            "fixed_discount",
+            "sale_price",
+            "bundle",
+            "free_shipping",
+            "gift_with_purchase",
+            "other"
+          ]
+        },
+        "offer_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 280
+        },
+        "price_amount": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MoneyAmount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "price_currency": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CurrencyCode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "discount_percent": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "data_json": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        }
+      }
+    },
+    "AllowedClaimSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "claim_id",
+        "claim_text",
+        "claim_type",
+        "approval_status"
+      ],
+      "properties": {
+        "claim_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "product_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "campaign_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "claim_text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 280
+        },
+        "claim_type": {
+          "type": "string",
+          "enum": [
+            "discount",
+            "inventory",
+            "feature",
+            "shipping",
+            "social_proof",
+            "guarantee",
+            "identity",
+            "product_identity",
+            "generic_creative"
+          ]
+        },
+        "evidence_ref": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval_status": {
+          "type": "string",
+          "enum": [
+            "approved",
+            "pending",
+            "rejected",
+            "expired"
+          ]
+        },
+        "data_json": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+        }
+      }
+    },
+    "ProductAssetSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "product_asset_id",
+        "product_id",
+        "role",
+        "sort_order"
+      ],
+      "properties": {
+        "product_asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "product_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+        },
+        "asset_id": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+        },
+        "external_url": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/URI"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "primary",
+            "gallery",
+            "reference",
+            "packaging",
+            "color_reference",
+            "lifestyle",
+            "demo_video"
+          ]
+        },
+        "sort_order": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "schema_version": "1.0.0",
+      "manifest_type": "catalog_snapshot",
+      "catalog_snapshot_id": "01J0000000000000000000000D",
+      "organization_id": "01J00000000000000000000001",
+      "campaign_id": "01J0000000000000000000000F",
+      "session_id": "01J00000000000000000000003",
+      "manifest_asset_id": "01J0000000000000000000000A",
+      "b2_object_key": "tenants/01J00000000000000000000001/sessions/01J00000000000000000000003/catalog/catalog_snapshot_01J0000000000000000000000D.json",
+      "product_count": 1,
+      "offer_count": 1,
+      "claim_count": 2,
+      "snapshot_hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "created_by_user_id": "01J00000000000000000000002",
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "products": [
+        {
+          "product_id": "01J0000000000000000000000E",
+          "sku": "ASTER-CROSSBODY-001",
+          "name": "Aster Everyday Crossbody",
+          "description": "Compact everyday crossbody bag.",
+          "product_url": "https://example.com/products/aster-everyday-crossbody",
+          "price_amount": 79.0,
+          "price_currency": "USD",
+          "inventory_status": "in_stock",
+          "source_adapter": "seeded_demo_catalog",
+          "external_ref": "aster-crossbody-demo",
+          "data_json": {}
+        }
+      ],
+      "offers": [
+        {
+          "campaign_offer_id": "01J0000000000000000000000G",
+          "product_id": "01J0000000000000000000000E",
+          "offer_type": "percent_discount",
+          "offer_text": "15% launch offer",
+          "price_amount": null,
+          "price_currency": "USD",
+          "discount_percent": 15,
+          "valid_from": null,
+          "valid_until": null,
+          "is_active": true,
+          "data_json": {}
+        }
+      ],
+      "allowed_claims": [
+        {
+          "claim_id": "01J0000000000000000000000H",
+          "product_id": "01J0000000000000000000000E",
+          "campaign_id": "01J0000000000000000000000F",
+          "claim_text": "adjustable strap",
+          "claim_type": "feature",
+          "evidence_ref": "seeded-demo-claim",
+          "valid_from": null,
+          "valid_until": null,
+          "approval_status": "approved",
+          "data_json": {}
+        }
+      ],
+      "product_assets": [
+        {
+          "product_asset_id": "01J00000000000000000000008",
+          "product_id": "01J0000000000000000000000E",
+          "asset_id": null,
+          "external_url": "https://example.com/demo/aster-crossbody.jpg",
+          "role": "primary",
+          "sort_order": 0
+        }
+      ],
+      "metadata_json": {}
+    }
+  ]
+}

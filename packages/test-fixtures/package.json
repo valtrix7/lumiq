@@ -1,0 +1,1 @@
+{"name":"@lumiq/test-fixtures","private":true,"type":"module","main":"src/index.ts","scripts":{"build":"tsc --noEmit","lint":"echo TODO fixtures lint","typecheck":"tsc --noEmit","test":"echo TODO fixture tests"},"devDependencies":{"typescript":"latest"}}

@@ -1,0 +1,220 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "generation_run_id",
+    "organization_id",
+    "run_type",
+    "status",
+    "idempotency_key",
+    "trace_id",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "generation_run_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "parent_run_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "run_type": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/GenerationRunType"
+    },
+    "status": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/GenerationRunStatus"
+    },
+    "provider": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ProviderName"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "provider_job_ref": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "template_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_/-]{1,120}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "template_version": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Semver"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "input_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "output_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "manifest_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "budget_authorization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "provider_policy_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "estimated_cost_usd": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CostUSD"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "actual_cost_usd": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CostUSD"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "started_at": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "error_code": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 120
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "failure_class": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaFailureClass"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "idempotency_key": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/IdempotencyKey"
+    },
+    "trace_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/TraceId"
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "updated_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    }
+  },
+  "description": "Durable media/Genblaze generation run contract. Rerenders create new runs and new output assets.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/generation-run.schema.json",
+  "title": "Lumiq Generation Run",
+  "$comment": "REQ-GEN-001, REQ-GEN-002, REQ-GEN-003, REQ-GEN-005. Genblaze executes approved runs but Core API owns state transitions.",
+  "examples": [
+    {
+      "generation_run_id": "01J0000000000000000000000B",
+      "organization_id": "01J00000000000000000000001",
+      "session_id": "01J00000000000000000000003",
+      "moment_id": "01J00000000000000000000004",
+      "parent_run_id": null,
+      "run_type": "enhancement",
+      "status": "completed",
+      "provider": "genblaze",
+      "model": "configured_model",
+      "provider_job_ref": "gb_demo_job_01",
+      "template_id": "clean_product_reveal",
+      "template_version": "1.0.0",
+      "input_asset_id": "01J00000000000000000000006",
+      "output_asset_id": "01J00000000000000000000007",
+      "manifest_asset_id": "01J0000000000000000000000A",
+      "budget_authorization_id": "01J0000000000000000000000S",
+      "provider_policy_id": null,
+      "estimated_cost_usd": 0.05,
+      "actual_cost_usd": 0.04,
+      "started_at": "2026-06-26T09:00:00.000Z",
+      "completed_at": "2026-06-26T09:00:00.000Z",
+      "error_code": null,
+      "failure_class": null,
+      "idempotency_key": "generation:01J0000000000000000000000B",
+      "trace_id": "trace_demo_01",
+      "metadata_json": {},
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "updated_at": "2026-06-26T09:00:00.000Z"
+    }
+  ]
+}

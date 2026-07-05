@@ -1,0 +1,261 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "qa_check_id",
+    "organization_id",
+    "qa_stage",
+    "status",
+    "checks",
+    "recommended_action",
+    "created_at"
+  ],
+  "properties": {
+    "qa_check_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "generation_run_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "publish_package_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "qa_stage": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaStage"
+    },
+    "status": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaStatus"
+    },
+    "score": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Score"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 1000
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "check_name",
+          "status",
+          "severity",
+          "evidence_refs"
+        ],
+        "properties": {
+          "check_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "uncertain",
+              "skipped"
+            ]
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "high",
+              "critical"
+            ]
+          },
+          "failure_class": {
+            "anyOf": [
+              {
+                "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaFailureClass"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_refs": {
+            "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRefs"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": [
+        "continue",
+        "retry",
+        "rerender",
+        "review",
+        "block_publish",
+        "terminate"
+      ]
+    },
+    "failure_class": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaFailureClass"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "completed_at": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    }
+  },
+  "description": "Multi-stage QA result and failure-classification contract.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/qa-result.schema.json",
+  "title": "Lumiq QA Result",
+  "$comment": "REQ-QA-001, REQ-QA-002, REQ-QA-003, REQ-QA-004, REQ-QA-005. QA validates generated/provider outputs before review/publish.",
+  "$defs": {
+    "QaCheckItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "check_name",
+        "status",
+        "severity",
+        "evidence_refs"
+      ],
+      "properties": {
+        "check_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "fail",
+            "uncertain",
+            "skipped"
+          ]
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "high",
+            "critical"
+          ]
+        },
+        "failure_class": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/QaFailureClass"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidence_refs": {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRefs"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "maxLength": 1000
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "qa_check_id": "01J0000000000000000000000J",
+      "organization_id": "01J00000000000000000000001",
+      "session_id": "01J00000000000000000000003",
+      "moment_id": "01J00000000000000000000004",
+      "asset_id": "01J00000000000000000000007",
+      "generation_run_id": "01J0000000000000000000000B",
+      "publish_package_id": null,
+      "qa_stage": "post_enhancement",
+      "status": "passed",
+      "score": 0.94,
+      "summary": "Output rendered, product facts are grounded, and lineage is complete.",
+      "checks": [
+        {
+          "check_name": "lineage_complete",
+          "status": "pass",
+          "severity": "high",
+          "failure_class": null,
+          "evidence_refs": [
+            "manifest:01J0000000000000000000000C"
+          ],
+          "reason": "Raw, run, output, and manifest links are present."
+        }
+      ],
+      "recommended_action": "continue",
+      "failure_class": null,
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "completed_at": "2026-06-26T09:00:00.000Z",
+      "metadata_json": {}
+    }
+  ]
+}

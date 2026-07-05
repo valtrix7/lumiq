@@ -1,0 +1,50 @@
+# Node / pnpm
+node_modules
+**/node_modules
+.pnpm-store
+
+# Build output
+.next
+**/.next
+dist
+**/dist
+build
+**/build
+out
+.turbo
+**/.turbo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Env / secrets (never bake into images)
+.env
+.env.*
+!.env.example
+
+# Version control & metadata
+.git
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile*
+.dockerignore
+docker-compose*.yml
+
+# Tests & coverage
+coverage
+**/coverage
+*.lcov
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Spec / docs (not needed at runtime)
+specs
+docs

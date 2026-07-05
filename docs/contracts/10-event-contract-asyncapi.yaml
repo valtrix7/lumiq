@@ -1,0 +1,951 @@
+asyncapi: 3.0.0
+info:
+  title: Lumiq Event Contract
+  version: 0.1.0
+  summary: AsyncAPI contract for Lumiq's NATS JetStream event backbone.
+  description: |
+    Machine-readable event contract for Lumiq — Live Commerce Moment Vault.
+
+    This AsyncAPI document describes the NATS JetStream subjects, event envelopes,
+    message payloads, producer/consumer ownership, retry/DLQ policy, and idempotency
+    rules for Lumiq's event-driven backend.
+
+    Architectural rules:
+      - NATS transports events and jobs; Postgres remains operational truth.
+      - All events use a standard envelope.
+      - All events are organization-scoped.
+      - All events are schema-versioned.
+      - Consumers must be idempotent.
+      - Retry exhaustion sends the event to a dead-letter stream.
+      - High-cardinality tenant/session IDs stay in payload, not subject names.
+defaultContentType: application/json
+servers:
+  dev:
+    host: localhost:4222
+    protocol: nats
+    title: Local NATS
+    description: Local development NATS JetStream server.
+  staging:
+    host: nats-staging.internal:4222
+    protocol: nats
+    title: Staging NATS
+    description: Staging NATS JetStream server.
+  production:
+    host: nats-prod.internal:4222
+    protocol: nats
+    title: Production NATS
+    description: Production NATS JetStream server.
+channels:
+  sessionOpened:
+    address: session.opened
+    messages:
+      SessionOpened:
+        $ref: "#/components/messages/SessionOpened"
+    x-lumiq:
+      stream: LUMIQ_SESSION
+      retention: limits
+      replay: true
+  sessionClosed:
+    address: session.closed
+    messages:
+      SessionClosed:
+        $ref: "#/components/messages/SessionClosed"
+    x-lumiq:
+      stream: LUMIQ_SESSION
+      replay: true
+  signalDetected:
+    address: signal.detected
+    messages:
+      SignalDetected:
+        $ref: "#/components/messages/SignalDetected"
+    x-lumiq:
+      stream: LUMIQ_SIGNAL
+      replay: true
+  momentCandidateProposed:
+    address: moment.candidate.proposed
+    messages:
+      MomentCandidateProposed:
+        $ref: "#/components/messages/MomentCandidateProposed"
+    x-lumiq:
+      stream: LUMIQ_MOMENT
+      replay: true
+  momentCaptureAuthorized:
+    address: moment.capture.authorized
+    messages:
+      MomentCaptureAuthorized:
+        $ref: "#/components/messages/MomentCaptureAuthorized"
+    x-lumiq:
+      stream: LUMIQ_MOMENT
+      durable_consumers:
+        - capture-worker
+  momentRawUploaded:
+    address: moment.raw.uploaded
+    messages:
+      MomentRawUploaded:
+        $ref: "#/components/messages/MomentRawUploaded"
+    x-lumiq:
+      stream: LUMIQ_MOMENT
+      durable_consumers:
+        - generation-dispatcher
+        - search-indexing-worker
+  generationRequested:
+    address: generation.requested
+    messages:
+      GenerationRequested:
+        $ref: "#/components/messages/GenerationRequested"
+    x-lumiq:
+      stream: LUMIQ_GENERATION
+      durable_consumers:
+        - genblaze-worker
+  generationStarted:
+    address: generation.started
+    messages:
+      GenerationStarted:
+        $ref: "#/components/messages/GenerationStarted"
+    x-lumiq:
+      stream: LUMIQ_GENERATION
+  generationCompleted:
+    address: generation.completed
+    messages:
+      GenerationCompleted:
+        $ref: "#/components/messages/GenerationCompleted"
+    x-lumiq:
+      stream: LUMIQ_GENERATION
+      durable_consumers:
+        - qa-worker
+        - provenance-verifier
+        - search-indexing-worker
+  generationFailed:
+    address: generation.failed
+    messages:
+      GenerationFailed:
+        $ref: "#/components/messages/GenerationFailed"
+    x-lumiq:
+      stream: LUMIQ_GENERATION
+      durable_consumers:
+        - admin-recovery
+  qaCompleted:
+    address: qa.completed
+    messages:
+      QaCompleted:
+        $ref: "#/components/messages/QaCompleted"
+    x-lumiq:
+      stream: LUMIQ_QA
+      durable_consumers:
+        - review-queue-updater
+  reviewApproved:
+    address: review.approved
+    messages:
+      ReviewApproved:
+        $ref: "#/components/messages/ReviewApproved"
+    x-lumiq:
+      stream: LUMIQ_REVIEW
+      durable_consumers:
+        - publish-worker
+  reviewRejected:
+    address: review.rejected
+    messages:
+      ReviewRejected:
+        $ref: "#/components/messages/ReviewRejected"
+    x-lumiq:
+      stream: LUMIQ_REVIEW
+  publishRequested:
+    address: publish.requested
+    messages:
+      PublishRequested:
+        $ref: "#/components/messages/PublishRequested"
+    x-lumiq:
+      stream: LUMIQ_PUBLISH
+      durable_consumers:
+        - publish-worker
+  publishCompleted:
+    address: publish.completed
+    messages:
+      PublishCompleted:
+        $ref: "#/components/messages/PublishCompleted"
+    x-lumiq:
+      stream: LUMIQ_PUBLISH
+      durable_consumers:
+        - search-indexing-worker
+  assetDeleted:
+    address: asset.deleted
+    messages:
+      AssetDeleted:
+        $ref: "#/components/messages/AssetDeleted"
+    x-lumiq:
+      stream: LUMIQ_ASSET
+      durable_consumers:
+        - search-indexing-worker
+        - retention-worker
+  auditRecorded:
+    address: audit.recorded
+    messages:
+      AuditRecorded:
+        $ref: "#/components/messages/AuditRecorded"
+    x-lumiq:
+      stream: LUMIQ_AUDIT
+  deadLetterCreated:
+    address: dead_letter.event.created
+    messages:
+      DeadLetterCreated:
+        $ref: "#/components/messages/DeadLetterCreated"
+    x-lumiq:
+      stream: LUMIQ_DLQ
+operations:
+  publishSessionOpened:
+    action: send
+    channel:
+      $ref: "#/channels/sessionOpened"
+    messages:
+      - $ref: "#/channels/sessionOpened/messages/SessionOpened"
+  receiveSessionOpened:
+    action: receive
+    channel:
+      $ref: "#/channels/sessionOpened"
+    messages:
+      - $ref: "#/channels/sessionOpened/messages/SessionOpened"
+  publishSignalDetected:
+    action: send
+    channel:
+      $ref: "#/channels/signalDetected"
+    messages:
+      - $ref: "#/channels/signalDetected/messages/SignalDetected"
+  receiveSignalDetected:
+    action: receive
+    channel:
+      $ref: "#/channels/signalDetected"
+    messages:
+      - $ref: "#/channels/signalDetected/messages/SignalDetected"
+  publishMomentCandidateProposed:
+    action: send
+    channel:
+      $ref: "#/channels/momentCandidateProposed"
+    messages:
+      - $ref: "#/channels/momentCandidateProposed/messages/MomentCandidateProposed"
+  receiveMomentCandidateProposed:
+    action: receive
+    channel:
+      $ref: "#/channels/momentCandidateProposed"
+    messages:
+      - $ref: "#/channels/momentCandidateProposed/messages/MomentCandidateProposed"
+  publishMomentCaptureAuthorized:
+    action: send
+    channel:
+      $ref: "#/channels/momentCaptureAuthorized"
+    messages:
+      - $ref: "#/channels/momentCaptureAuthorized/messages/MomentCaptureAuthorized"
+  receiveMomentCaptureAuthorized:
+    action: receive
+    channel:
+      $ref: "#/channels/momentCaptureAuthorized"
+    messages:
+      - $ref: "#/channels/momentCaptureAuthorized/messages/MomentCaptureAuthorized"
+  publishGenerationRequested:
+    action: send
+    channel:
+      $ref: "#/channels/generationRequested"
+    messages:
+      - $ref: "#/channels/generationRequested/messages/GenerationRequested"
+  receiveGenerationRequested:
+    action: receive
+    channel:
+      $ref: "#/channels/generationRequested"
+    messages:
+      - $ref: "#/channels/generationRequested/messages/GenerationRequested"
+  publishGenerationCompleted:
+    action: send
+    channel:
+      $ref: "#/channels/generationCompleted"
+    messages:
+      - $ref: "#/channels/generationCompleted/messages/GenerationCompleted"
+  receiveGenerationCompleted:
+    action: receive
+    channel:
+      $ref: "#/channels/generationCompleted"
+    messages:
+      - $ref: "#/channels/generationCompleted/messages/GenerationCompleted"
+  publishQaCompleted:
+    action: send
+    channel:
+      $ref: "#/channels/qaCompleted"
+    messages:
+      - $ref: "#/channels/qaCompleted/messages/QaCompleted"
+  receiveQaCompleted:
+    action: receive
+    channel:
+      $ref: "#/channels/qaCompleted"
+    messages:
+      - $ref: "#/channels/qaCompleted/messages/QaCompleted"
+  publishReviewApproved:
+    action: send
+    channel:
+      $ref: "#/channels/reviewApproved"
+    messages:
+      - $ref: "#/channels/reviewApproved/messages/ReviewApproved"
+  receiveReviewApproved:
+    action: receive
+    channel:
+      $ref: "#/channels/reviewApproved"
+    messages:
+      - $ref: "#/channels/reviewApproved/messages/ReviewApproved"
+  publishPublishRequested:
+    action: send
+    channel:
+      $ref: "#/channels/publishRequested"
+    messages:
+      - $ref: "#/channels/publishRequested/messages/PublishRequested"
+  receivePublishRequested:
+    action: receive
+    channel:
+      $ref: "#/channels/publishRequested"
+    messages:
+      - $ref: "#/channels/publishRequested/messages/PublishRequested"
+components:
+  messages:
+    SessionOpened:
+      name: session.opened.v1
+      title: Session opened
+      summary: Emitted when a session transitions to live.
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: session.opened
+              payload:
+                $ref: "#/components/schemas/SessionOpenedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [signal-extraction-worker, live-studio-realtime]
+        requirement_ids: [REQ-SESSION-004]
+
+    SessionClosed:
+      name: session.closed.v1
+      title: Session closed
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: session.closed
+              payload:
+                $ref: "#/components/schemas/SessionClosedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [audit-worker, reconciliation-worker]
+        requirement_ids: [REQ-SESSION-005]
+
+    SignalDetected:
+      name: signal.detected.v1
+      title: Signal detected
+      summary: Low-level signal emitted while a session is live.
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: signal.detected
+              payload:
+                $ref: "#/components/schemas/SignalDetectedPayload"
+      x-lumiq:
+        producer: signal-extraction-worker
+        consumers: [mastra-agent-service, moment-ranker]
+        requirement_ids: [REQ-SIGNAL-001]
+
+    MomentCandidateProposed:
+      name: moment.candidate.proposed.v1
+      title: Moment candidate proposed
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: moment.candidate.proposed
+              payload:
+                $ref: "#/components/schemas/MomentCandidateProposedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [moment-ranker, live-studio-realtime]
+        requirement_ids: [REQ-SIGNAL-002, REQ-SIGNAL-003]
+
+    MomentCaptureAuthorized:
+      name: moment.capture.authorized.v1
+      title: Moment capture authorized
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: moment.capture.authorized
+              payload:
+                $ref: "#/components/schemas/MomentCaptureAuthorizedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [capture-worker]
+        requirement_ids: [REQ-CAPTURE-001]
+
+    MomentRawUploaded:
+      name: moment.raw.uploaded.v1
+      title: Moment raw uploaded
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: moment.raw.uploaded
+              payload:
+                $ref: "#/components/schemas/MomentRawUploadedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [generation-dispatcher, search-indexing-worker]
+        requirement_ids: [REQ-CAPTURE-004, REQ-CAPTURE-005]
+
+    GenerationRequested:
+      name: generation.requested.v1
+      title: Generation requested
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: generation.requested
+              payload:
+                $ref: "#/components/schemas/GenerationRequestedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [genblaze-worker]
+        requirement_ids: [REQ-GEN-001]
+
+    GenerationStarted:
+      name: generation.started.v1
+      title: Generation started
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: generation.started
+              payload:
+                $ref: "#/components/schemas/GenerationStartedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [live-studio-realtime, review-queue-updater]
+
+    GenerationCompleted:
+      name: generation.completed.v1
+      title: Generation completed
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: generation.completed
+              payload:
+                $ref: "#/components/schemas/GenerationCompletedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [qa-worker, provenance-verifier, search-indexing-worker]
+        requirement_ids: [REQ-GEN-002]
+
+    GenerationFailed:
+      name: generation.failed.v1
+      title: Generation failed
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: generation.failed
+              payload:
+                $ref: "#/components/schemas/GenerationFailedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [admin-recovery, review-queue-updater]
+        requirement_ids: [REQ-GEN-004]
+
+    QaCompleted:
+      name: qa.completed.v1
+      title: QA completed
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: qa.completed
+              payload:
+                $ref: "#/components/schemas/QaCompletedPayload"
+      x-lumiq:
+        producer: qa-worker
+        consumers: [review-queue-updater, core-api]
+        requirement_ids: [REQ-QA-002]
+
+    ReviewApproved:
+      name: review.approved.v1
+      title: Review approved
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: review.approved
+              payload:
+                $ref: "#/components/schemas/ReviewApprovedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [publish-worker]
+        requirement_ids: [REQ-REVIEW-005]
+
+    ReviewRejected:
+      name: review.rejected.v1
+      title: Review rejected
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: review.rejected
+              payload:
+                $ref: "#/components/schemas/ReviewRejectedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [audit-worker]
+
+    PublishRequested:
+      name: publish.requested.v1
+      title: Publish requested
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: publish.requested
+              payload:
+                $ref: "#/components/schemas/PublishRequestedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [publish-worker]
+        requirement_ids: [REQ-PUBLISH-001]
+
+    PublishCompleted:
+      name: publish.completed.v1
+      title: Publish completed
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: publish.completed
+              payload:
+                $ref: "#/components/schemas/PublishCompletedPayload"
+      x-lumiq:
+        producer: publish-worker
+        consumers: [search-indexing-worker, live-studio-realtime]
+        requirement_ids: [REQ-PUBLISH-004]
+
+    AssetDeleted:
+      name: asset.deleted.v1
+      title: Asset deleted
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: asset.deleted
+              payload:
+                $ref: "#/components/schemas/AssetDeletedPayload"
+      x-lumiq:
+        producer: core-api
+        consumers: [search-indexing-worker, retention-worker]
+        requirement_ids: [REQ-RETENTION-002]
+
+    AuditRecorded:
+      name: audit.recorded.v1
+      title: Audit recorded
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: audit.recorded
+              payload:
+                $ref: "#/components/schemas/AuditRecordedPayload"
+      x-lumiq:
+        producer: audit-service
+        consumers: [audit-worker]
+
+    DeadLetterCreated:
+      name: dead_letter.event.created.v1
+      title: Dead-letter event created
+      headers:
+        $ref: "#/components/schemas/EventHeaders"
+      payload:
+        allOf:
+          - $ref: "#/components/schemas/EventEnvelope"
+          - type: object
+            properties:
+              event_type:
+                const: dead_letter.event.created
+              payload:
+                $ref: "#/components/schemas/DeadLetterCreatedPayload"
+      x-lumiq:
+        producer: event-runtime
+        consumers: [admin-recovery]
+        requirement_ids: [REQ-EVENT-005]
+
+  schemas:
+    EventHeaders:
+      type: object
+      required: [x-lumiq-event-id, x-lumiq-trace-id, x-lumiq-idempotency-key]
+      properties:
+        x-lumiq-event-id:
+          type: string
+        x-lumiq-trace-id:
+          type: string
+        x-lumiq-correlation-id:
+          type: string
+        x-lumiq-idempotency-key:
+          type: string
+        x-lumiq-schema-version:
+          type: string
+
+    ULID:
+      type: string
+      pattern: "^[0-9A-HJKMNP-TV-Z]{26}$"
+
+    EventEnvelope:
+      type: object
+      required:
+        - event_id
+        - event_type
+        - schema_version
+        - organization_id
+        - occurred_at
+        - producer
+        - idempotency_key
+        - correlation_id
+        - trace_id
+        - payload
+      properties:
+        event_id:
+          $ref: "#/components/schemas/ULID"
+        event_type:
+          type: string
+        schema_version:
+          type: string
+          examples: ["1.0.0"]
+        organization_id:
+          $ref: "#/components/schemas/ULID"
+        occurred_at:
+          type: string
+          format: date-time
+        producer:
+          type: string
+        idempotency_key:
+          type: string
+        correlation_id:
+          type: string
+        trace_id:
+          type: string
+        payload:
+          type: object
+
+    SessionOpenedPayload:
+      type: object
+      required: [session_id, source_type, started_at]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        source_type:
+          type: string
+          enum: [browser_camera, screen_share, upload_prerecorded, prerecorded_live, obs_rtmp, external_adapter]
+        campaign_id: { $ref: "#/components/schemas/ULID" }
+        catalog_snapshot_id: { $ref: "#/components/schemas/ULID" }
+        started_at: { type: string, format: date-time }
+
+    SessionClosedPayload:
+      type: object
+      required: [session_id, ended_at]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        ended_at: { type: string, format: date-time }
+        reason: { type: string }
+
+    SignalDetectedPayload:
+      type: object
+      required: [session_id, signal_id, signal_type, t_start_ms, score]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        signal_id: { $ref: "#/components/schemas/ULID" }
+        signal_type:
+          type: string
+          enum: [product_visible, keyword_hit, offer_mention, audio_energy_peak, scene_change, manual_marker, chat_spike]
+        t_start_ms: { type: integer }
+        t_end_ms: { type: integer }
+        score: { type: number, minimum: 0, maximum: 1 }
+        evidence_ref: { type: string }
+        summary: { type: string }
+
+    MomentCandidateProposedPayload:
+      type: object
+      required: [session_id, candidate_id, start_ms, end_ms, moment_type, confidence, reason]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        candidate_id: { $ref: "#/components/schemas/ULID" }
+        start_ms: { type: integer }
+        end_ms: { type: integer }
+        moment_type:
+          type: string
+          enum: [product_reveal, offer_mention, try_on, feature_demo, host_reaction, before_after, limited_stock_cta, unknown]
+        confidence: { type: number, minimum: 0, maximum: 1 }
+        reason: { type: string }
+        evidence_refs:
+          type: array
+          items: { type: string }
+        agent_tool_call_id: { $ref: "#/components/schemas/ULID" }
+
+    MomentCaptureAuthorizedPayload:
+      type: object
+      required: [session_id, moment_id, raw_capture_start_ms, raw_capture_end_ms, authorization_id]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        raw_capture_start_ms: { type: integer }
+        raw_capture_end_ms: { type: integer }
+        authorization_id: { $ref: "#/components/schemas/ULID" }
+        policy_result:
+          type: object
+          additionalProperties: true
+
+    MomentRawUploadedPayload:
+      type: object
+      required: [session_id, moment_id, raw_asset_id]
+      properties:
+        session_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        raw_asset_id: { $ref: "#/components/schemas/ULID" }
+        mezzanine_asset_id: { $ref: "#/components/schemas/ULID" }
+        live_transformed_asset_id: { $ref: "#/components/schemas/ULID" }
+
+    GenerationRequestedPayload:
+      type: object
+      required: [generation_run_id, moment_id, input_asset_id, template_id, template_version]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        session_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        input_asset_id: { $ref: "#/components/schemas/ULID" }
+        template_id: { type: string }
+        template_version: { type: string }
+        provider_policy_id: { $ref: "#/components/schemas/ULID" }
+        budget_authorization_id: { $ref: "#/components/schemas/ULID" }
+
+    GenerationStartedPayload:
+      type: object
+      required: [generation_run_id]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        provider: { type: string }
+        model: { type: string }
+
+    GenerationCompletedPayload:
+      type: object
+      required: [generation_run_id, output_asset_id, manifest_asset_id]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        output_asset_id: { $ref: "#/components/schemas/ULID" }
+        manifest_asset_id: { $ref: "#/components/schemas/ULID" }
+        provider: { type: string }
+        model: { type: string }
+        provider_job_ref: { type: string }
+        actual_cost_usd: { type: number }
+
+    GenerationFailedPayload:
+      type: object
+      required: [generation_run_id, failure_class, error_code, message]
+      properties:
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        failure_class:
+          type: string
+          enum: [retryable, remediable, review_required, terminal]
+        error_code: { type: string }
+        message: { type: string }
+        fallback_attempted: { type: boolean }
+
+    QaCompletedPayload:
+      type: object
+      required: [moment_id, status, checks]
+      properties:
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        generation_run_id: { $ref: "#/components/schemas/ULID" }
+        status:
+          type: string
+          enum: [passed, failed, review_required, terminal]
+        checks:
+          type: array
+          items:
+            type: object
+            required: [check_name, status]
+            properties:
+              check_name: { type: string }
+              status: { type: string, enum: [pass, fail, uncertain] }
+              failure_class: { type: string, enum: [retryable, remediable, review_required, terminal] }
+              reason: { type: string }
+
+    ReviewApprovedPayload:
+      type: object
+      required: [moment_id, asset_id, approved_by_user_id]
+      properties:
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        asset_id: { $ref: "#/components/schemas/ULID" }
+        approved_by_user_id: { $ref: "#/components/schemas/ULID" }
+        promote_canonical: { type: boolean }
+
+    ReviewRejectedPayload:
+      type: object
+      required: [moment_id, rejected_by_user_id, reason]
+      properties:
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        rejected_by_user_id: { $ref: "#/components/schemas/ULID" }
+        reason: { type: string }
+
+    PublishRequestedPayload:
+      type: object
+      required: [publish_package_id, moment_id, canonical_asset_id]
+      properties:
+        publish_package_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        canonical_asset_id: { $ref: "#/components/schemas/ULID" }
+        destinations:
+          type: array
+          items:
+            type: string
+
+    PublishCompletedPayload:
+      type: object
+      required: [publish_package_id, status]
+      properties:
+        publish_package_id: { $ref: "#/components/schemas/ULID" }
+        status:
+          type: string
+          enum: [ready, published, failed]
+        asset_ids:
+          type: array
+          items: { $ref: "#/components/schemas/ULID" }
+        share_page_id: { $ref: "#/components/schemas/ULID" }
+
+    AssetDeletedPayload:
+      type: object
+      required: [asset_id, delete_status]
+      properties:
+        asset_id: { $ref: "#/components/schemas/ULID" }
+        moment_id: { $ref: "#/components/schemas/ULID" }
+        delete_status:
+          type: string
+          enum: [soft_deleted, scheduled_physical_delete, physically_deleted]
+        reason: { type: string }
+
+    AuditRecordedPayload:
+      type: object
+      required: [audit_event_id, actor_type, actor_id, action]
+      properties:
+        audit_event_id: { $ref: "#/components/schemas/ULID" }
+        actor_type:
+          type: string
+          enum: [user, service_agent, worker, system]
+        actor_id: { type: string }
+        action: { type: string }
+        resource_type: { type: string }
+        resource_id: { type: string }
+
+    DeadLetterCreatedPayload:
+      type: object
+      required: [dead_letter_event_id, original_event_type, error_message]
+      properties:
+        dead_letter_event_id: { $ref: "#/components/schemas/ULID" }
+        original_event_type: { type: string }
+        original_event_id: { $ref: "#/components/schemas/ULID" }
+        error_message: { type: string }
+        retry_count: { type: integer }
+        consumer: { type: string }
+
+x-lumiq-runtime:
+  nats:
+    ack_policy: explicit
+    max_deliver: 5
+    backoff: [5s, 30s, 2m, 10m, 30m]
+    dead_letter_subject: dead_letter.event.created
+    idempotency: required
+    consumer_rule: ack_only_after_durable_state
+  streams:
+    LUMIQ_SESSION:
+      subjects: [session.*]
+    LUMIQ_SIGNAL:
+      subjects: [signal.*]
+    LUMIQ_MOMENT:
+      subjects: [moment.*]
+    LUMIQ_GENERATION:
+      subjects: [generation.*]
+    LUMIQ_QA:
+      subjects: [qa.*]
+    LUMIQ_REVIEW:
+      subjects: [review.*]
+    LUMIQ_PUBLISH:
+      subjects: [publish.*]
+    LUMIQ_ASSET:
+      subjects: [asset.*]
+    LUMIQ_AUDIT:
+      subjects: [audit.*]
+    LUMIQ_DLQ:
+      subjects: [dead_letter.*]

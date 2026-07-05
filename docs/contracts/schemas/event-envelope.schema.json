@@ -1,0 +1,72 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id",
+    "event_type",
+    "schema_version",
+    "organization_id",
+    "occurred_at",
+    "producer",
+    "idempotency_key",
+    "correlation_id",
+    "trace_id",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "event_type": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)+$"
+    },
+    "schema_version": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SchemaVersion"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "occurred_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "producer": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EventProducer"
+    },
+    "idempotency_key": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/IdempotencyKey"
+    },
+    "correlation_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/CorrelationId"
+    },
+    "trace_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/TraceId"
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "description": "Standard Lumiq NATS event envelope. Event-specific payload validation lives in nats-events.schema.json.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/event-envelope.schema.json",
+  "title": "Lumiq Event Envelope",
+  "$comment": "REQ-EVENT-001, REQ-EVENT-002, REQ-EVENT-004. Schema validates shape only; Core API still enforces authorization, tenant scope, policy, and state machines.",
+  "examples": [
+    {
+      "event_id": "01J0000000000000000000000Q",
+      "event_type": "session.opened",
+      "schema_version": "1.0.0",
+      "organization_id": "01J00000000000000000000001",
+      "occurred_at": "2026-06-26T09:00:00.000Z",
+      "producer": "core-api",
+      "idempotency_key": "session:start:01J00000000000000000000003",
+      "correlation_id": "corr_demo_01",
+      "trace_id": "trace_demo_01",
+      "payload": {
+        "session_id": "01J00000000000000000000003",
+        "source_type": "prerecorded_live",
+        "started_at": "2026-06-26T09:00:00.000Z"
+      }
+    }
+  ]
+}

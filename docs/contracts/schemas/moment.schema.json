@@ -1,0 +1,158 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "moment_id",
+    "organization_id",
+    "session_id",
+    "state",
+    "moment_type",
+    "start_ms",
+    "end_ms",
+    "duration_ms",
+    "created_at",
+    "updated_at"
+  ],
+  "properties": {
+    "moment_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "organization_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "session_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ULID"
+    },
+    "catalog_snapshot_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "campaign_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "product_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "state": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MomentState"
+    },
+    "moment_type": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/MomentType"
+    },
+    "start_ms": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+    },
+    "end_ms": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+    },
+    "duration_ms": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+    },
+    "raw_capture_start_ms": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "raw_capture_end_ms": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Milliseconds"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "score": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Score"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "selection_reason": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ShortText"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "product_match_confidence": {
+      "anyOf": [
+        {
+          "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/Score"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "is_human_confirmed": {
+      "type": "boolean",
+      "default": false
+    },
+    "canonical_asset_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "current_generation_run_id": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/NullableULID"
+    },
+    "evidence_refs": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/EvidenceRefs"
+    },
+    "metadata_json": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/SafeMetadata"
+    },
+    "created_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    },
+    "updated_at": {
+      "$ref": "https://schemas.lumiq.app/common.schema.json#/$defs/ISODateTime"
+    }
+  },
+  "description": "Moment domain/API/DB-row contract. A moment is a time interval, not automatically a file.",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.lumiq.app/moment.schema.json",
+  "title": "Lumiq Moment",
+  "$comment": "REQ-SIGNAL-002, REQ-SIGNAL-003, REQ-CAPTURE-001, REQ-CAPTURE-003. Detectors and agents may propose moments but cannot capture directly.",
+  "examples": [
+    {
+      "moment_id": "01J00000000000000000000004",
+      "organization_id": "01J00000000000000000000001",
+      "session_id": "01J00000000000000000000003",
+      "catalog_snapshot_id": "01J0000000000000000000000D",
+      "campaign_id": "01J0000000000000000000000F",
+      "product_id": "01J0000000000000000000000E",
+      "state": "raw_uploaded",
+      "moment_type": "product_reveal",
+      "start_ms": 27000,
+      "end_ms": 45000,
+      "duration_ms": 18000,
+      "raw_capture_start_ms": 20000,
+      "raw_capture_end_ms": 54000,
+      "score": 0.93,
+      "selection_reason": "Product visible with offer mention and feature demo.",
+      "product_match_confidence": 0.91,
+      "is_human_confirmed": false,
+      "canonical_asset_id": null,
+      "current_generation_run_id": null,
+      "evidence_refs": [
+        "signal:product_visible",
+        "transcript:offer_mention"
+      ],
+      "metadata_json": {},
+      "created_at": "2026-06-26T09:00:00.000Z",
+      "updated_at": "2026-06-26T09:00:00.000Z"
+    }
+  ]
+}

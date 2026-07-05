@@ -1,0 +1,337 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+ * Lumiq design tokens — dark-only cinematic AI studio.
+ * Source of truth: docs/design/variables.css, docs/design/theme.css, docs/design/tokens.json.
+ * Rules: dark only, royal/cobalt primary actions, pure-black media canvas, near-black panels,
+ * muted semantic statuses, flat gradients only (never glow, blur, aura, or gradient primary buttons),
+ * Inter for UI, mono for technical data.
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* shadcn semantic surface mapping */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* shadcn sidebar mapping */
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Lumiq primitive surfaces */
+  --color-canvas-black: var(--canvas-black);
+  --color-shell-black: var(--shell-black);
+  --color-panel-black: var(--panel-black);
+  --color-surface-one: var(--surface-one);
+  --color-surface-two: var(--surface-two);
+  --color-surface-three: var(--surface-three);
+  --color-surface-four: var(--surface-four);
+
+  /* Lumiq text scale */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+
+  /* Lumiq brand / royal blue */
+  --color-royal-blue: var(--royal-blue);
+  --color-royal-blue-hover: var(--royal-blue-hover);
+  --color-royal-blue-pressed: var(--royal-blue-pressed);
+
+  /* Lumiq semantic statuses (text/icon foreground) */
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-processing: var(--processing);
+  --color-neutral: var(--neutral);
+
+  /* Flat spectral accents — provenance / AI lineage only */
+  --color-spectral-peach: var(--spectral-peach);
+  --color-spectral-pink: var(--spectral-pink);
+  --color-spectral-lavender: var(--spectral-lavender);
+  --color-spectral-mint: var(--spectral-mint);
+  --color-spectral-blue: var(--spectral-blue);
+  --color-ember-red: var(--ember-red);
+  --color-ember-pink: var(--ember-pink);
+
+  /* Operational chart colors (semantic, not decorative) */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Typography */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --font-heading: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --text-micro: 10px;
+  --text-caption: 11px;
+  --text-label: 12px;
+  --text-body-sm: 13px;
+  --text-body: 14px;
+  --text-body-lg: 18px;
+  --text-heading-sm: 20px;
+  --text-heading-md: 24px;
+  --text-heading-lg: 32px;
+  --text-heading-xl: 40px;
+  --text-display: 52px;
+
+  /* Radius scale (Lumiq) */
+  --radius-xs: 4px;
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
+  --radius-full: 999px;
+
+  /* Layout */
+  --spacing-sidebar: 248px;
+  --spacing-topbar: 64px;
+
+  /* Shadows */
+  --shadow-popover: 0 16px 40px rgba(0, 0, 0, 0.42);
+  --shadow-modal: 0 24px 80px rgba(0, 0, 0, 0.55);
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --color-chart-scale-pattern-color: var(--chart-scale-pattern-color);
+  --color-chart-scale-05: var(--chart-scale-05);
+  --color-chart-scale-04: var(--chart-scale-04);
+  --color-chart-scale-03: var(--chart-scale-03);
+  --color-chart-scale-02: var(--chart-scale-02);
+  --color-chart-scale-01: var(--chart-scale-01);
+  --color-chart-label: var(--chart-label);
+  --color-chart-marker-foreground: var(--chart-marker-foreground);
+  --color-chart-marker-border: var(--chart-marker-border);
+  --color-chart-marker-background: var(--chart-marker-background);
+  --color-chart-tooltip-muted: var(--chart-tooltip-muted);
+  --color-chart-tooltip-foreground: var(--chart-tooltip-foreground);
+  --color-chart-tooltip-background: var(--chart-tooltip-background);
+  --chart-brush-border: var(--chart-brush-border);
+  --color-chart-grid: var(--chart-grid);
+  --color-chart-crosshair: var(--chart-crosshair);
+  --chart-line-secondary: var(--chart-line-secondary);
+  --chart-line-primary: var(--chart-line-primary);
+  --color-chart-foreground-muted: var(--chart-foreground-muted);
+  --color-chart-foreground: var(--chart-foreground);
+  --color-chart-background: var(--chart-background);
+}
+
+:root {
+  color-scheme: dark;
+
+  /* Lumiq primitive surfaces */
+  --canvas-black: #000000;
+  --shell-black: #050506;
+  --panel-black: #0b0b0d;
+  --surface-one: #111114;
+  --surface-two: #18181d;
+  --surface-three: #212129;
+  --surface-four: #292934;
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #b7b7c2;
+  --text-muted: #8c8c99;
+  --text-faint: #5e5e6b;
+
+  /* Royal blue brand action / live signal */
+  --royal-blue: #365cff;
+  --royal-blue-hover: #4c6dff;
+  --royal-blue-pressed: #2948d8;
+  --royal-blue-soft: rgba(54, 92, 255, 0.14);
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-medium: rgba(255, 255, 255, 0.14);
+  --border-strong: rgba(255, 255, 255, 0.22);
+
+  /* shadcn semantic variables (dark-only) */
+  --background: #000000;
+  --foreground: #ffffff;
+  --card: #111114;
+  --card-foreground: #ffffff;
+  --popover: #292934;
+  --popover-foreground: #ffffff;
+  --primary: #365cff;
+  --primary-foreground: #ffffff;
+  --secondary: #18181d;
+  --secondary-foreground: #ffffff;
+  --muted: #0b0b0d;
+  --muted-foreground: #8c8c99;
+  --accent: #212129;
+  --accent-foreground: #ffffff;
+  --destructive: #ff7a8a;
+  --destructive-foreground: #140407;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.1);
+  --ring: #365cff;
+
+  /* Sidebar */
+  --sidebar: #050506;
+  --sidebar-foreground: #b7b7c2;
+  --sidebar-primary: #365cff;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #111114;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: #365cff;
+
+  /* Semantic statuses */
+  --success: #7be7a1;
+  --success-bg: rgba(123, 231, 161, 0.1);
+  --success-border: rgba(123, 231, 161, 0.2);
+  --warning: #ffd27a;
+  --warning-bg: rgba(255, 210, 122, 0.1);
+  --warning-border: rgba(255, 210, 122, 0.2);
+  --danger: #ff7a8a;
+  --danger-bg: rgba(255, 122, 138, 0.1);
+  --danger-border: rgba(255, 122, 138, 0.2);
+  --processing: #8fa4ff;
+  --processing-bg: rgba(54, 92, 255, 0.12);
+  --processing-border: rgba(54, 92, 255, 0.24);
+  --neutral: #b7b7c2;
+  --neutral-bg: rgba(255, 255, 255, 0.06);
+  --neutral-border: rgba(255, 255, 255, 0.1);
+
+  /* Flat spectral accents — provenance / AI lineage only (never glow/blur/aura) */
+  --spectral-peach: #f6d1ac;
+  --spectral-pink: #f3b5d2;
+  --spectral-lavender: #c7b8f5;
+  --spectral-mint: #a7eadc;
+  --spectral-blue: #afcdf6;
+  --ember-red: #fc6767;
+  --ember-pink: #ec008c;
+  --gradient-spectral-pastel: linear-gradient(to right, #f6d1ac, #f3b5d2, #c7b8f5, #a7eadc, #afcdf6);
+  --gradient-ember-rose: linear-gradient(to right, #fc6767, #ec008c);
+
+  /* Operational chart colors — muted semantic status, no decorative gradients */
+  --chart-1: #365cff;
+  --chart-2: #8fa4ff;
+  --chart-3: #7be7a1;
+  --chart-4: #ffd27a;
+  --chart-5: #ff7a8a;
+
+  /* Base radius (Lumiq lg) */
+  --radius: 14px;
+
+  /* Layout sizing */
+  --sidebar-width: 248px;
+  --topbar-height: 64px;
+  --workspace-max-width: 1440px;
+  --content-max-width: 1280px;
+
+  /* Motion durations */
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+  --chart-background: oklch(1 0 0);
+  --chart-foreground: oklch(0.145 0.004 285);
+  --chart-foreground-muted: oklch(0.55 0.014 260);
+  --chart-line-primary: var(--chart-1);
+  --chart-line-secondary: var(--chart-2);
+  --chart-crosshair: oklch(0.4 0.1828 274.34);
+  --chart-grid: oklch(0.9 0 0);
+  --chart-brush-border: var(--chart-grid);
+  --chart-tooltip-background: oklch(0.21 0.006 285 / 0.8);
+  --chart-tooltip-foreground: oklch(0.985 0 0);
+  --chart-tooltip-muted: oklch(0.65 0.01 260);
+  --chart-marker-background: oklch(0.97 0.005 260);
+  --chart-marker-border: oklch(0.85 0.01 260);
+  --chart-marker-foreground: oklch(0.3 0.01 260);
+  --chart-label: oklch(0.45 0.01 260);
+  --chart-scale-01: oklch(0.98 0.003 106);
+  --chart-scale-02: oklch(0.92 0.008 106);
+  --chart-scale-03: oklch(0.82 0.015 106);
+  --chart-scale-04: oklch(0.68 0.02 106);
+  --chart-scale-05: oklch(0.55 0.025 106);
+  --chart-scale-pattern-color: oklch(0.96 0.005 106);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 1ms;
+    --duration-base: 1ms;
+    --duration-slow: 1ms;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  /* Technical/provenance metadata always renders in mono */
+  .font-mono,
+  code,
+  kbd,
+  samp,
+  [data-mono] {
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1;
+  }
+}
+
+/*
+ ---break---
+ */
+
+.dark {
+  /* Operational chart palette stays semantic (Lumiq), not grayscale. */
+  --chart-1: #365cff;
+  --chart-2: #8fa4ff;
+  --chart-3: #7be7a1;
+  --chart-4: #ffd27a;
+  --chart-5: #ff7a8a;
+  --chart-background: #000000;
+  --chart-foreground: oklch(0.45 0 0);
+  --chart-foreground-muted: oklch(0.65 0.01 260);
+  --chart-crosshair: oklch(0.45 0 0);
+  --chart-grid: oklch(0.25 0 0);
+  --chart-brush-border: var(--chart-grid);
+  --chart-marker-background: oklch(0.25 0.01 260);
+  --chart-marker-border: oklch(0.4 0.01 260);
+  --chart-marker-foreground: oklch(0.9 0 0);
+  --chart-label: oklch(0.75 0.01 260);
+  --chart-scale-01: oklch(0.28 0.03 270);
+  --chart-scale-02: oklch(0.38 0.04 270);
+  --chart-scale-03: oklch(0.48 0.05 270);
+  --chart-scale-04: oklch(0.58 0.06 270);
+  --chart-scale-05: oklch(0.68 0.07 270);
+  --chart-scale-pattern-color: oklch(0.145 0 0);
+}
